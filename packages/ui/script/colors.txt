@@ -193,7 +193,7 @@
 --icon-diff-delete-hover: var(--ember-light-11);
 --syntax-comment: var(--text-weaker);
 --syntax-regexp: var(--text-base);
---syntax-string: #007663;
+--syntax-string: var(--text-strong);
 --syntax-keyword: var(--text-weak);
 --syntax-primitive: #FB7F51;
 --syntax-operator: var(--text-weak);

@@ -26,8 +26,12 @@ function Row(props: {
   return (
     <div
       use:sortable
-      class="group flex items-center gap-2 rounded-[18px] border border-border-weak-base bg-background-base/80 px-2 py-2"
+      class="group flex items-center gap-2 rounded-[18px] px-2 py-2"
       classList={{ "opacity-50": sortable.isActiveDraggable }}
+      style={{
+        background: "color-mix(in oklab, var(--background-base) 92%, var(--surface-raised-base))",
+        border: "1px solid var(--border-weaker-base)",
+      }}
     >
       <Show when={props.multiple}>
         <button
@@ -43,7 +47,7 @@ function Row(props: {
         <Button
           type="button"
           variant="secondary"
-          class="h-10 rounded-full px-4 text-15-medium"
+          class="h-10 rounded-full px-4 text-15-medium border-0"
           disabled={props.busy}
           onMouseDown={(event: MouseEvent) => event.stopPropagation()}
           onClick={props.onSend}
@@ -65,13 +69,13 @@ function Row(props: {
             as={IconButton}
             icon="menu"
             variant="ghost"
-            class="h-10 w-10 rounded-full"
+            class="h-10 w-10 rounded-full text-text-weak"
             aria-label={language.t("common.moreOptions")}
             disabled={props.busy}
             onMouseDown={(event: MouseEvent) => event.stopPropagation()}
           />
           <DropdownMenu.Portal>
-            <DropdownMenu.Content class="min-w-56 rounded-[22px]">
+            <DropdownMenu.Content class="min-w-56 rounded-[22px] border border-border-weak-base bg-background-base shadow-[0_12px_30px_rgba(0,0,0,0.14)]">
               <DropdownMenu.Item onSelect={props.onEdit}>
                 <Icon name="edit" class="w-4 h-4 mr-2" />
                 <DropdownMenu.ItemLabel>{language.t("session.followupDock.editMessage")}</DropdownMenu.ItemLabel>
@@ -125,14 +129,15 @@ export function SessionFollowupDock(props: {
   return (
     <DockTray
       data-component="session-followup-dock"
+      class="border-t border-border-weaker-base bg-background-base/96"
       style={{
         "margin-bottom": "-0.875rem",
         "border-bottom-left-radius": 0,
         "border-bottom-right-radius": 0,
       }}
     >
-      <div class="px-3 pt-2 pb-2 flex items-center justify-between gap-2">
-        <div class="text-12-medium text-text-weak">
+      <div class="px-4 pt-3 pb-2 flex items-center justify-between gap-2">
+        <div class="text-12-medium text-text-weak tracking-[0.01em]">
           {language.t(
             props.items.length === 1 ? "session.followupDock.summary.one" : "session.followupDock.summary.other",
             { count: props.items.length },
@@ -142,7 +147,7 @@ export function SessionFollowupDock(props: {
       <DragDropProvider onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} collisionDetector={closestCenter}>
         <DragDropSensors />
         <ConstrainDragYAxis />
-        <div class="px-3 pb-7 flex flex-col gap-2 max-h-56 overflow-y-auto no-scrollbar">
+        <div class="px-4 pb-3 flex flex-col gap-2 max-h-56 overflow-y-auto no-scrollbar">
           <SortableProvider ids={ids()}>
             <For each={props.items}>
               {(item) => (

@@ -68,3 +68,4 @@ GET /project/:projectID/find/file?directory=<resolve path> -> File
 
 - 2026-03-14: Fixed the session composer footer so tray controls under the chat input keep their intended contrast, and corrected the prompt mode transition so shell-mode chrome does not remain visibly overlaid in normal mode.
 - 2026-03-14: Upgraded follow-up queueing in the session composer with queue-first behavior while the assistant is busy, immediate send via Cmd/Ctrl+Enter, and a reorderable queued-message list with send, edit, delete, and queue-toggle actions.
+- 2026-03-14: Refined the stacked composer visuals for the todo-panel-plus-queued-messages state so the input shell, queued rows, and shortcut tooltip align more closely with the target light and dark theme references.

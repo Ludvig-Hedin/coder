@@ -116,6 +116,7 @@ export function SessionTodoDock(props: {
   return (
     <DockTray
       data-component="session-todo-dock"
+      class="border-b border-border-weaker-base bg-background-base/96"
       style={{
         "overflow-x": "visible",
         "overflow-y": "hidden",
@@ -125,7 +126,7 @@ export function SessionTodoDock(props: {
       <div ref={contentRef}>
         <div
           data-action="session-todo-toggle"
-          class="pl-3 pr-2 py-2 flex items-center gap-2 overflow-visible"
+          class="pl-4 pr-3 py-3 flex items-center gap-2 overflow-visible"
           role="button"
           tabIndex={0}
           onClick={toggle}
@@ -269,7 +270,7 @@ function TodoList(props: { todos: Todo[]; open: boolean }) {
   return (
     <div class="relative">
       <div
-        class="px-3 pb-11 flex flex-col gap-1.5 max-h-42 overflow-y-auto no-scrollbar"
+        class="px-4 pb-5 flex flex-col gap-2 max-h-42 overflow-y-auto no-scrollbar"
         ref={scrollRef}
         style={{ "overflow-anchor": "none" }}
         onScroll={(e) => {

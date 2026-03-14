@@ -1243,6 +1243,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           "group/prompt-input": true,
           "focus-within:shadow-xs-border": true,
           "border-icon-info-active border-dashed": store.draggingType !== null,
+          "rounded-[30px] border border-border-weak-base bg-background-base shadow-[0_10px_30px_rgba(0,0,0,0.06)]": true,
           [props.class ?? ""]: !!props.class,
         }}
       >
@@ -1272,7 +1273,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           removeLabel={language.t("prompt.attachment.remove")}
         />
         <div
-          class="relative"
+          class="relative px-4 pt-3"
           onMouseDown={(e) => {
             const target = e.target
             if (!(target instanceof HTMLElement)) return
@@ -1312,7 +1313,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               onKeyDown={handleKeyDown}
               classList={{
                 "select-text": true,
-                "w-full pl-3 pr-2 pt-2 text-14-regular text-text-strong focus:outline-none whitespace-pre-wrap": true,
+                "w-full min-h-[112px] pl-0 pr-0 pt-1 text-[16px] leading-8 text-text-strong focus:outline-none whitespace-pre-wrap": true,
                 "[&_[data-type=file]]:text-syntax-property": true,
                 "[&_[data-type=agent]]:text-syntax-type": true,
                 "font-mono!": store.mode === "shell",
@@ -1321,7 +1322,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             />
             <Show when={!prompt.dirty()}>
               <div
-                class="absolute top-0 inset-x-0 pl-3 pr-2 pt-2 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate"
+                class="absolute top-0 inset-x-0 pl-0 pr-0 pt-1 text-[16px] leading-8 text-text-weak pointer-events-none whitespace-nowrap truncate"
                 classList={{ "font-mono!": store.mode === "shell" }}
                 style={{ "padding-bottom": space }}
               >
@@ -1336,11 +1337,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             style={{
               height: space,
               background:
-                "linear-gradient(to top, var(--surface-raised-stronger-non-alpha) calc(100% - 20px), transparent)",
+                "linear-gradient(to top, color-mix(in oklab, var(--background-base) 92%, transparent) calc(100% - 20px), transparent)",
             }}
           />
 
-          <div class="pointer-events-none absolute bottom-2 right-2 flex items-center gap-2">
+          <div class="pointer-events-none absolute bottom-3 right-4 flex items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
@@ -1357,6 +1358,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               <Tooltip
                 placement="top"
                 inactive={!hasDraft() && !working()}
+                contentClass="rounded-[22px] border border-border-weak-base bg-background-base px-3 py-2 shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
                 value={
                   <Switch>
                     <Match when={working() && !sending()}>
@@ -1366,14 +1368,18 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       </div>
                     </Match>
                     <Match when={queueing()}>
-                      <div class="flex flex-col gap-1">
-                        <div class="flex items-center gap-2">
+                      <div class="flex flex-col gap-1 min-w-42">
+                        <div class="flex items-center justify-between gap-4 text-[15px] leading-6">
                           <span>{language.t("prompt.action.queue")}</span>
-                          <span class="text-icon-base text-12-medium text-[10px]!">{language.t("common.key.enter")}</span>
+                          <span class="rounded-full bg-surface-raised-base px-2.5 py-0.5 text-text-weak text-12-medium">
+                            {language.t("common.key.enter")}
+                          </span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center justify-between gap-4 text-[15px] leading-6">
                           <span>{language.t("prompt.action.sendNow")}</span>
-                          <span class="text-icon-base text-12-medium text-[10px]!">{immediateKey()}</span>
+                          <span class="rounded-full bg-surface-raised-base px-2.5 py-0.5 text-text-weak text-12-medium">
+                            {immediateKey()}
+                          </span>
                         </div>
                       </div>
                     </Match>
@@ -1393,7 +1399,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   tabIndex={store.mode === "normal" ? undefined : -1}
                   icon={sending() ? "arrow-up" : "stop"}
                   variant="primary"
-                  class="size-8 rounded-full border-0"
+                  class="size-12 rounded-full border-0 shadow-none"
                   style={buttons()}
                   aria-label={
                     sending()
@@ -1407,7 +1413,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             </div>
           </div>
 
-          <div class="pointer-events-none absolute bottom-2 left-2">
+          <div class="pointer-events-none absolute bottom-3 left-4">
             <div
               aria-hidden={store.mode !== "normal"}
               class="pointer-events-auto"
@@ -1424,7 +1430,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   data-action="prompt-attach"
                   type="button"
                   variant="ghost"
-                  class="size-8 p-0 rounded-full border-0"
+                  class="size-10 p-0 rounded-full border-0 text-text-weak"
                   style={buttons()}
                   onClick={pick}
                   disabled={store.mode !== "normal"}
@@ -1439,8 +1445,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         </div>
       </DockShellForm>
       <Show when={store.mode === "normal" || store.mode === "shell"}>
-        <DockTray attach="top">
-          <div class="px-1.75 pt-5.5 pb-2 flex items-center gap-2 min-w-0">
+        <DockTray
+          attach="top"
+          class="border-t border-border-weaker-base bg-background-base/92 backdrop-blur-[8px]"
+        >
+          <div class="px-4 pt-5 pb-3 flex items-center gap-2 min-w-0">
             <div class="flex items-center gap-1.5 min-w-0 flex-1 relative">
               <div
                 class="h-7 flex items-center gap-1.5 max-w-[160px] min-w-0 absolute inset-y-0 left-0"
