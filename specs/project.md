@@ -48,6 +48,7 @@ POST /project/:projectID/session/:sessionID/permission/:permissionID -> Session
 GET /project/:projectID/session/:sessionID/find/file -> string[]
 
 GET /project/:projectID/session/:sessionID/file -> { type: "raw" | "patch", content: string }
+POST /project/:projectID/session/:sessionID/file/directory -> { type: "directory", ... }
 
 GET /project/:projectID/session/:sessionID/file/status -> File[]
 
