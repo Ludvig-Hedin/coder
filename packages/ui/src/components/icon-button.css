@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   text-decoration: none;
   user-select: none;
   aspect-ratio: 1;
@@ -10,6 +10,7 @@
 
   &[data-variant="primary"] {
     background-color: var(--icon-strong-base);
+    border: transparent;
 
     [data-slot="icon-svg"] {
       /* color: var(--icon-weak-base); */
@@ -43,9 +44,10 @@
 
   &[data-variant="secondary"] {
     border: transparent;
+    border-radius: 9999px;
     background-color: var(--button-secondary-base);
     color: var(--text-strong);
-    box-shadow: var(--shadow-xs-border-base);
+    box-shadow: none;
 
     &:hover:not(:disabled) {
       background-color: var(--button-secondary-hover);
@@ -76,6 +78,8 @@
   }
 
   &[data-variant="ghost"] {
+    border: transparent;
+    border-radius: 9999px;
     background-color: transparent;
     /* color: var(--icon-base); */
 

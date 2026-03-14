@@ -23,9 +23,14 @@ const ListLoadingState: Component<{ label: string }> = (props) => {
 const ListEmptyState: Component<{ message: string; filter: string }> = (props) => {
   return (
     <div class="flex flex-col items-center justify-center py-12 text-center">
-      <span class="text-14-regular text-text-weak">{props.message}</span>
-      <Show when={props.filter}>
-        <span class="text-14-regular text-text-strong mt-1">&quot;{props.filter}&quot;</span>
+      <div class="size-12 rounded-full bg-surface-raised-base flex items-center justify-center mb-4">
+        <Icon name="magnifying-glass" class="size-5 text-icon-weak-base" />
+      </div>
+      <span class="text-14-medium text-text-strong">{props.message}</span>
+      <Show when={props.filter} fallback={
+        <span class="text-13-regular text-text-weak mt-1">Try connecting more providers to see models.</span>
+      }>
+        <span class="text-13-regular text-text-weak mt-1">No results for &quot;{props.filter}&quot;</span>
       </Show>
     </div>
   )

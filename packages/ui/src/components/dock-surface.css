@@ -9,11 +9,23 @@
 
 [data-dock-surface="tray"] {
   background-color: var(--background-base);
-  border: 1px solid var(--border-weak-base);
   position: relative;
   z-index: 0;
   border-radius: 12px;
   overflow: clip;
+}
+
+[data-dock-surface="tray"] * {
+  color: var(--text-base);
+  opacity: 0.6;
+}
+
+[data-dock-surface="tray"] *[data-active="true"] {
+  opacity: 1;
+}
+
+[data-dock-surface="tray"] *:hover * {
+  opacity: 1;
 }
 
 [data-dock-surface="tray"][data-dock-attach="top"] {

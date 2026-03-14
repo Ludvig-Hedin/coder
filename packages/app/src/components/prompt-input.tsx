@@ -268,10 +268,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
   const buttonsSpring = useSpring(() => (store.mode === "normal" ? 1 : 0), { visualDuration: 0.2, bounce: 0 })
   const motion = (value: number) => ({
-    opacity: value,
-    transform: `scale(${0.95 + value * 0.05})`,
-    filter: `blur(${(1 - value) * 2}px)`,
-    "pointer-events": value > 0.5 ? ("auto" as const) : ("none" as const),
+    opacity: 1,
+    transform: `scale(1)`,
+    filter: `blur(0px)`,
+    "pointer-events": store.mode === "normal" ? ("auto" as const) : ("none" as const),
   })
   const buttons = createMemo(() => motion(buttonsSpring()))
   const shell = createMemo(() => motion(1 - buttonsSpring()))
@@ -1376,7 +1376,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   tabIndex={store.mode === "normal" ? undefined : -1}
                   icon={working() ? "stop" : "arrow-up"}
                   variant="primary"
-                  class="size-8"
+                  class="size-8 rounded-full border-0"
                   style={buttons()}
                   aria-label={working() ? language.t("prompt.action.stop") : language.t("prompt.action.send")}
                 />
@@ -1389,7 +1389,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               aria-hidden={store.mode !== "normal"}
               class="pointer-events-auto"
               style={{
-                "pointer-events": buttonsSpring() > 0.5 ? "auto" : "none",
+                "pointer-events": store.mode === "normal" ? "auto" : "none",
               }}
             >
               <TooltipKeybind
@@ -1401,7 +1401,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   data-action="prompt-attach"
                   type="button"
                   variant="ghost"
-                  class="size-8 p-0"
+                  class="size-8 p-0 rounded-full border-0"
                   style={buttons()}
                   onClick={pick}
                   disabled={store.mode !== "normal"}
@@ -1551,6 +1551,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       "h-7 w-7 p-0 shrink-0 flex items-center justify-center": true,
                       "text-text-base": !accepting(),
                       "hover:bg-surface-success-base": accepting(),
+                      "bg-surface-success-base/50": accepting(),
                     }}
                     style={control()}
                     aria-label={acceptLabel()}

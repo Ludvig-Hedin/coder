@@ -384,9 +384,20 @@ export default function FileTree(props: {
     return out
   })
 
+  const loading = createMemo(() => {
+    const dir = file.tree.state(props.path)
+    return !dir?.loaded && (dir?.loading || shouldListRoot({ level, dir }))
+  })
+
   return (
     <div data-component="filetree" class={`flex flex-col gap-0.5 ${props.class ?? ""}`}>
-      <For each={nodes()}>
+      <Show when={!loading()} fallback={
+        <div class="px-2 py-1.5 text-12-regular text-text-weaker flex items-center gap-2">
+          <div class="size-3 border border-text-weaker border-t-transparent rounded-full animate-spin" />
+          Loading...
+        </div>
+      }>
+        <For each={nodes()}>
         {(node) => {
           const expanded = () => file.tree.state(node.path)?.expanded ?? false
           const deep = () => deeps().get(node.path) ?? -1
@@ -502,6 +513,7 @@ export default function FileTree(props: {
           )
         }}
       </For>
+      </Show>
     </div>
   )
 }

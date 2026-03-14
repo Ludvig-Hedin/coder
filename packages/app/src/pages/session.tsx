@@ -1692,7 +1692,13 @@ export default function Page() {
           <div class="flex-1 min-h-0 overflow-hidden">
             <Switch>
               <Match when={params.id}>
-                <Show when={lastUserMessage()}>
+                <Show when={lastUserMessage()} fallback={
+                  <Show when={!messagesReady()}>
+                    <div class="h-full flex items-center justify-center">
+                      <div class="size-5 border-2 border-text-weaker border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  </Show>
+                }>
                   <MessageTimeline
                     mobileChanges={mobileChanges()}
                     mobileFallback={reviewContent({

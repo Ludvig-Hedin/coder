@@ -197,24 +197,25 @@ export const DialogSelectModel: Component<{ provider?: string; model?: ModelStat
     <Dialog
       title={language.t("dialog.model.select.title")}
       action={
-        <Button
-          class="h-7 -my-1 text-14-medium"
-          icon="plus-small"
-          tabIndex={-1}
-          onClick={() => dialog.show(() => <DialogSelectProvider />)}
-        >
-          {language.t("command.provider.connect")}
-        </Button>
+        <div class="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => dialog.show(() => <DialogSelectProvider />)}>
+            {language.t("command.provider.connect")}
+          </Button>
+          <Tooltip placement="top" value={language.t("dialog.model.manage")}>
+            <IconButton
+              icon="sliders"
+              variant="ghost"
+              iconSize="normal"
+              class="size-8"
+              aria-label={language.t("dialog.model.manage")}
+              onClick={() => dialog.show(() => <DialogManageModels />)}
+            />
+          </Tooltip>
+        </div>
       }
     >
       <ModelList provider={props.provider} model={props.model} onSelect={() => dialog.close()} />
-      <Button
-        variant="ghost"
-        class="ml-3 mt-5 mb-6 text-text-base self-start"
-        onClick={() => dialog.show(() => <DialogManageModels />)}
-      >
-        {language.t("dialog.model.manage")}
-      </Button>
+      <div class="mb-4"></div>
     </Dialog>
   )
 }

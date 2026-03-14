@@ -13,7 +13,8 @@
 
   &[data-variant="primary"] {
     background-color: var(--button-primary-base);
-    border-color: var(--border-weak-base);
+    border-color: transparent;
+    border-radius: 9999px;
     color: var(--icon-invert-base);
 
     [data-slot="icon-svg"] {
@@ -40,6 +41,7 @@
 
   &[data-variant="ghost"] {
     border-color: transparent;
+    border-radius: 9999px;
     background-color: transparent;
     color: var(--text-strong);
 
