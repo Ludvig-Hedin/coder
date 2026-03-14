@@ -5,12 +5,27 @@ WORKDIR /app
 RUN apk add --no-cache ripgrep libgcc libstdc++
 
 COPY package.json bun.lock ./
+
 COPY packages/opencode/package.json ./packages/opencode/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/util/package.json ./packages/util/
 COPY packages/sdk/js/package.json ./packages/sdk/js/
 COPY packages/plugin/package.json ./packages/plugin/
 COPY packages/script/package.json ./packages/script/
+COPY packages/slack/package.json ./packages/slack/
+COPY packages/function/package.json ./packages/function/
+COPY packages/web/package.json ./packages/web/
+COPY packages/storybook/package.json ./packages/storybook/
+COPY packages/desktop/package.json ./packages/desktop/
+COPY packages/desktop-electron/package.json ./packages/desktop-electron/
+COPY packages/app/package.json ./packages/app/
+
+RUN mkdir -p packages/console/app packages/console/core packages/console/function packages/console/mail packages/console/resource
+COPY packages/console/app/package.json ./packages/console/app/ 2>/dev/null || true
+COPY packages/console/core/package.json ./packages/console/core/ 2>/dev/null || true
+COPY packages/console/function/package.json ./packages/console/function/ 2>/dev/null || true
+COPY packages/console/mail/package.json ./packages/console/mail/ 2>/dev/null || true
+COPY packages/console/resource/package.json ./packages/console/resource/ 2>/dev/null || true
 
 RUN bun install
 
