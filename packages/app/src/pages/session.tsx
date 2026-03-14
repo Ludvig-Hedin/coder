@@ -1419,6 +1419,29 @@ export default function Page() {
 
   const followupDock = createMemo(() => queuedFollowups().map((item) => ({ id: item.id, text: followupText(item) })))
 
+  const removeFollowup = (id: string) => {
+    const sessionID = params.id
+    if (!sessionID) return
+    if (followup.sending[sessionID] === id) return
+    setFollowup("items", sessionID, (items) => (items ?? []).filter((entry) => entry.id !== id))
+    setFollowup("failed", sessionID, (value) => (value === id ? undefined : value))
+  }
+
+  const moveFollowup = (from: string, to: string) => {
+    const sessionID = params.id
+    if (!sessionID) return
+    setFollowup("items", sessionID, (items) => {
+      if (!items) return items
+      const fromIndex = items.findIndex((item) => item.id === from)
+      const toIndex = items.findIndex((item) => item.id === to)
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return items
+      const next = [...items]
+      const [item] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, item)
+      return next
+    })
+  }
+
   const sendFollowup = (sessionID: string, id: string, opts?: { manual?: boolean }) => {
     const item = (followup.items[sessionID] ?? []).find((entry) => entry.id === id)
     if (!item) return Promise.resolve()
@@ -1778,6 +1801,9 @@ export default function Page() {
                       void sendFollowup(params.id!, id, { manual: true })
                     },
                     onEdit: editFollowup,
+                    onRemove: removeFollowup,
+                    onMove: moveFollowup,
+                    onDisableQueue: () => settings.general.setFollowup("steer"),
                     onEditLoaded: clearFollowupEdit,
                   }
                 : undefined

@@ -287,6 +287,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     if (store.mode !== "shell") return items
     return items.filter((item) => !item.comment?.trim())
   })
+  const hasDraft = createMemo(() => prompt.dirty() || imageAttachments().length > 0 || commentCount() > 0)
+  const queueing = createMemo(() => store.mode === "normal" && !!props.shouldQueue?.() && hasDraft())
+  const sending = createMemo(() => hasDraft() || !working())
+  const modifier = createMemo(() => (platform.os === "macos" ? "Cmd" : language.t("common.key.ctrl")))
+  const immediateKey = createMemo(() => `${modifier()}+${language.t("common.key.enter")}`)
 
   const hasUserPrompt = createMemo(() => {
     const sessionID = params.id
@@ -1211,7 +1216,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
     // Note: Shift+Enter is handled earlier, before IME check
     if (event.key === "Enter" && !event.shiftKey) {
-      handleSubmit(event)
+      handleSubmit(event, { immediate: (event.metaKey || event.ctrlKey) && !event.altKey })
     }
   }
 
@@ -1351,13 +1356,25 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             <div class="flex items-center gap-1 pointer-events-auto">
               <Tooltip
                 placement="top"
-                inactive={!prompt.dirty() && !working()}
+                inactive={!hasDraft() && !working()}
                 value={
                   <Switch>
-                    <Match when={working()}>
+                    <Match when={working() && !sending()}>
                       <div class="flex items-center gap-2">
                         <span>{language.t("prompt.action.stop")}</span>
                         <span class="text-icon-base text-12-medium text-[10px]!">{language.t("common.key.esc")}</span>
+                      </div>
+                    </Match>
+                    <Match when={queueing()}>
+                      <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                          <span>{language.t("prompt.action.queue")}</span>
+                          <span class="text-icon-base text-12-medium text-[10px]!">{language.t("common.key.enter")}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span>{language.t("prompt.action.sendNow")}</span>
+                          <span class="text-icon-base text-12-medium text-[10px]!">{immediateKey()}</span>
+                        </div>
                       </div>
                     </Match>
                     <Match when={true}>
@@ -1372,13 +1389,19 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                 <IconButton
                   data-action="prompt-submit"
                   type="submit"
-                  disabled={store.mode !== "normal" || (!prompt.dirty() && !working() && commentCount() === 0)}
+                  disabled={store.mode !== "normal" || (!hasDraft() && !working())}
                   tabIndex={store.mode === "normal" ? undefined : -1}
-                  icon={working() ? "stop" : "arrow-up"}
+                  icon={sending() ? "arrow-up" : "stop"}
                   variant="primary"
                   class="size-8 rounded-full border-0"
                   style={buttons()}
-                  aria-label={working() ? language.t("prompt.action.stop") : language.t("prompt.action.send")}
+                  aria-label={
+                    sending()
+                      ? queueing()
+                        ? language.t("prompt.action.queue")
+                        : language.t("prompt.action.send")
+                      : language.t("prompt.action.stop")
+                  }
                 />
               </Tooltip>
             </div>
