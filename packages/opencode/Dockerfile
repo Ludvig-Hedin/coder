@@ -1,18 +1,39 @@
-FROM alpine AS base
+FROM oven/bun:1.3.10-alpine
 
-# Disable the runtime transpiler cache by default inside Docker containers.
-# On ephemeral containers, the cache is not useful
-ARG BUN_RUNTIME_TRANSPILER_CACHE_PATH=0
-ENV BUN_RUNTIME_TRANSPILER_CACHE_PATH=${BUN_RUNTIME_TRANSPILER_CACHE_PATH}
-RUN apk add libgcc libstdc++ ripgrep
+WORKDIR /app
 
-FROM base AS build-amd64
-COPY dist/opencode-linux-x64-baseline-musl/bin/opencode /usr/local/bin/opencode
+RUN apk add --no-cache python3 make g++ ripgrep libgcc libstdc++
 
-FROM base AS build-arm64
-COPY dist/opencode-linux-arm64-musl/bin/opencode /usr/local/bin/opencode
+COPY package.json bun.lock ./
+COPY patches ./patches
 
-ARG TARGETARCH
-FROM build-${TARGETARCH}
-RUN opencode --version
-ENTRYPOINT ["opencode"]
+COPY packages/opencode/package.json ./packages/opencode/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/util/package.json ./packages/util/
+COPY packages/sdk/js/package.json ./packages/sdk/js/
+COPY packages/plugin/package.json ./packages/plugin/
+COPY packages/script/package.json ./packages/script/
+COPY packages/slack/package.json ./packages/slack/
+COPY packages/function/package.json ./packages/function/
+COPY packages/web/package.json ./packages/web/
+COPY packages/storybook/package.json ./packages/storybook/
+COPY packages/desktop/package.json ./packages/desktop/
+COPY packages/desktop-electron/package.json ./packages/desktop-electron/
+COPY packages/app/package.json ./packages/app/
+COPY packages/console/app/package.json ./packages/console/app/
+COPY packages/console/core/package.json ./packages/console/core/
+COPY packages/console/function/package.json ./packages/console/function/
+COPY packages/console/mail/package.json ./packages/console/mail/
+COPY packages/console/resource/package.json ./packages/console/resource/
+
+RUN bun install
+
+COPY packages ./packages
+
+WORKDIR /app/packages/opencode
+
+ENV NODE_ENV=production
+
+EXPOSE 4096
+
+CMD ["sh", "-c", "bun run --conditions=browser ./src/index.ts serve --port ${PORT:-4096} --hostname 0.0.0.0"]
