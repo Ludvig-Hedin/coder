@@ -62,3 +62,7 @@ GET /project/:projectID/agent?directory=<resolve path> -> Agent
 GET /project/:projectID/find/file?directory=<resolve path> -> File
 
 ```
+
+### recent notes
+
+- 2026-03-14: Fixed the session composer footer so tray controls under the chat input keep their intended contrast, and corrected the prompt mode transition so shell-mode chrome does not remain visibly overlaid in normal mode.
