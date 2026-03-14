@@ -207,6 +207,36 @@ describe("file/index Filesystem patterns", () => {
     })
   })
 
+  describe("File.mkdir()", () => {
+    test("creates a directory in the current scope", async () => {
+      await using tmp = await tmpdir()
+
+      await Instance.provide({
+        directory: tmp.path,
+        fn: async () => {
+          const node = await File.mkdir({ name: "apps" })
+          expect(node.type).toBe("directory")
+          expect(node.path).toBe("apps")
+          expect(await Filesystem.exists(path.join(tmp.path, "apps"))).toBe(true)
+        },
+      })
+    })
+
+    test("creates nested directories under a parent path", async () => {
+      await using tmp = await tmpdir()
+      await fs.mkdir(path.join(tmp.path, "workspace"), { recursive: true })
+
+      await Instance.provide({
+        directory: tmp.path,
+        fn: async () => {
+          const node = await File.mkdir({ path: "workspace", name: "api/v1" })
+          expect(node.path).toBe("workspace/api/v1")
+          expect(await Filesystem.exists(path.join(tmp.path, "workspace", "api", "v1"))).toBe(true)
+        },
+      })
+    })
+  })
+
   describe("File.changed() - Filesystem.readText() for untracked files", () => {
     test("reads untracked files via Filesystem.readText()", async () => {
       await using tmp = await tmpdir({ git: true })
