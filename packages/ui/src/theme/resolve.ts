@@ -342,7 +342,7 @@ export function resolveThemeVariant(variant: ThemeVariant, isDark: boolean): Res
   if (colors.compact) {
     tokens["syntax-comment"] = "var(--text-weak)"
     tokens["syntax-regexp"] = "var(--text-base)"
-    tokens["syntax-string"] = content(colors.success, success)
+    tokens["syntax-string"] = tokens["text-strong"]
     tokens["syntax-keyword"] = content(colors.accent, accent)
     tokens["syntax-primitive"] = content(colors.primary, primary)
     tokens["syntax-operator"] = isDark ? "var(--text-weak)" : "var(--text-base)"
@@ -379,7 +379,7 @@ export function resolveThemeVariant(variant: ThemeVariant, isDark: boolean): Res
   if (!colors.compact) {
     tokens["syntax-comment"] = "var(--text-weak)"
     tokens["syntax-regexp"] = "var(--text-base)"
-    tokens["syntax-string"] = isDark ? "#00ceb9" : "#006656"
+    tokens["syntax-string"] = tokens["text-strong"]
     tokens["syntax-keyword"] = "var(--text-weak)"
     tokens["syntax-primitive"] = isDark ? "#ffba92" : "#fb4804"
     tokens["syntax-operator"] = isDark ? "var(--text-weak)" : "var(--text-base)"

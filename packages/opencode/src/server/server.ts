@@ -54,6 +54,28 @@ export namespace Server {
 
   export const Default = lazy(() => createApp({}))
 
+  export function origin(input: string | undefined, cors?: string[]) {
+    if (!input) return
+
+    if (input.startsWith("http://localhost:")) return input
+    if (input.startsWith("http://127.0.0.1:")) return input
+    if (
+      input === "tauri://localhost" ||
+      input === "http://tauri.localhost" ||
+      input === "https://tauri.localhost"
+    )
+      return input
+
+    if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) {
+      return input
+    }
+    if (cors?.some((item) => match(input, item))) {
+      return input
+    }
+
+    return
+  }
+
   export const createApp = (opts: { cors?: string[] }): Hono => {
     const app = new Hono()
     return app
@@ -104,26 +126,7 @@ export namespace Server {
       .use(
         cors({
           origin(input) {
-            if (!input) return
-
-            if (input.startsWith("http://localhost:")) return input
-            if (input.startsWith("http://127.0.0.1:")) return input
-            if (
-              input === "tauri://localhost" ||
-              input === "http://tauri.localhost" ||
-              input === "https://tauri.localhost"
-            )
-              return input
-
-            // *.opencode.ai (https only, adjust if needed)
-            if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) {
-              return input
-            }
-            if (opts?.cors?.includes(input)) {
-              return input
-            }
-
-            return
+            return origin(input, opts?.cors)
           },
         }),
       )
@@ -635,4 +638,22 @@ export namespace Server {
 
     return server
   }
+}
+
+function match(input: string, rule: string) {
+  if (rule === input) return true
+  if (!rule.startsWith("*")) return false
+
+  const suffix = rule.slice(1)
+  if (!suffix) return false
+
+  let url: URL
+  try {
+    url = new URL(input)
+  } catch {
+    return false
+  }
+
+  if (url.protocol !== "https:") return false
+  return url.hostname.length > suffix.length && url.hostname.endsWith(suffix)
 }

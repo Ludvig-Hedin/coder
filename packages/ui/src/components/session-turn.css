@@ -196,6 +196,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    background: var(--surface-weak);
+    border-radius: 0.75rem;
+    padding: 0 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
   }
 
   [data-slot="session-turn-diff-meta"] {

@@ -1,8 +1,8 @@
-FROM oven/bun:1.3.10-alpine
+FROM oven/bun:1.3.10
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ ripgrep libgcc libstdc++
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ ripgrep && rm -rf /var/lib/apt/lists/*
 
 COPY package.json bun.lock ./
 COPY patches ./patches
