@@ -1,0 +1,26 @@
+FROM oven/bun:1.3.10-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 make g++ ripgrep libgcc libstdc++
+
+# Copy root workspace files
+COPY package.json bun.lock ./
+COPY patches ./patches
+
+# Copy ALL workspace packages (needed for dependencies)
+COPY packages ../packages
+
+# Go to root and install
+WORKDIR /app
+RUN bun install
+
+# Copy source code
+WORKDIR /app/packages/opencode
+
+ENV NODE_ENV=production
+ENV PORT=4096
+
+EXPOSE 4096
+
+CMD ["bun", "run", "--conditions=browser", "./src/index.ts", "serve", "--port", "4096", "--hostname", "0.0.0.0"]
