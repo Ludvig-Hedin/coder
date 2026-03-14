@@ -5,6 +5,7 @@ WORKDIR /app
 RUN apk add --no-cache ripgrep libgcc libstdc++
 
 COPY package.json bun.lock ./
+COPY patches ./patches
 
 COPY packages/opencode/package.json ./packages/opencode/
 COPY packages/ui/package.json ./packages/ui/
