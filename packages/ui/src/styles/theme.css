@@ -121,6 +121,7 @@
   --surface-strong: #ffffff;
   --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
   --surface-raised-stronger-non-alpha: #ffffff;
+  --surface-user-message: rgba(0, 0, 0, 0.025);
   --surface-brand-base: #dcde8d;
   --surface-brand-hover: #d0d283;
   --surface-interactive-base: #ecf3ff;
@@ -385,6 +386,7 @@
     --surface-strong: rgba(255, 255, 255, 0.169);
     --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
     --surface-raised-stronger-non-alpha: #1c1c1c;
+    --surface-user-message: rgba(255, 255, 255, 0.04);
     --surface-brand-base: #fab283;
     --surface-brand-hover: #eda779;
     --surface-interactive-base: #091f52;
