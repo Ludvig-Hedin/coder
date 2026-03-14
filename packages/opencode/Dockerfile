@@ -36,4 +36,4 @@ ENV NODE_ENV=production
 
 EXPOSE 4096
 
-CMD ["sh", "-c", "bun run --conditions=browser ./src/index.ts serve --port ${PORT:-4096} --hostname 0.0.0.0"]
+CMD ["sh", "-c", "bun run --conditions=browser ./src/index.ts serve --port ${PORT:-4096} --hostname 0.0.0.0 --cors https://cloud-agent-dev.vercel.app"]
