@@ -1,6 +1,0 @@
-[build]
-builder = "dockerfile"
-dockerfilePath = "packages/opencode/Dockerfile.prod"
-
-[deploy]
-restartPolicyType = "on_failure"
