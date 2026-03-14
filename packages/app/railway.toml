@@ -4,3 +4,4 @@ dockerfilePath = "Dockerfile.frontend"
 
 [deploy]
 restartPolicyType = "never"
+numReplicas = 1

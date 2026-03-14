@@ -38,9 +38,8 @@ COPY packages/script ./packages/script
 
 WORKDIR /app/packages/opencode
 
-ENV PORT=4096
 ENV NODE_ENV=production
 
 EXPOSE 4096
 
-CMD ["bun", "run", "--conditions=browser", "./src/index.ts", "serve", "--port", "4096", "--hostname", "0.0.0.0"]
+CMD ["sh", "-c", "bun run --conditions=browser ./src/index.ts serve --port ${PORT:-4096} --hostname 0.0.0.0"]

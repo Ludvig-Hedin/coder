@@ -3,5 +3,4 @@ builder = "dockerfile"
 dockerfilePath = "packages/opencode/Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
 restartPolicyType = "on_failure"
