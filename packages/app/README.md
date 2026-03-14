@@ -49,3 +49,7 @@ Environment options:
 ## Deployment
 
 You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+
+### Vercel SPA routing
+
+When deploying under Vercel (including `cloud-agent-dev.vercel.app`) Optional paths such as `/Lw/session/...` need to fall back to the single-page shell. `vercel.json` rewrites any non-asset request to `/index.html` while still letting the CDN serve actual files, so refreshing a chat URL no longer 404s.
