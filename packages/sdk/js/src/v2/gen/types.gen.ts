@@ -4173,6 +4173,28 @@ export type FileReadResponses = {
 
 export type FileReadResponse = FileReadResponses[keyof FileReadResponses]
 
+export type FileMkdirData = {
+  body?: {
+    path?: string
+    name: string
+  }
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/file/directory"
+}
+
+export type FileMkdirResponses = {
+  /**
+   * Created directory
+   */
+  200: FileNode
+}
+
+export type FileMkdirResponse = FileMkdirResponses[keyof FileMkdirResponses]
+
 export type FileStatusData = {
   body?: never
   path?: never

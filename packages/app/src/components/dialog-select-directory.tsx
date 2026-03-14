@@ -1,11 +1,16 @@
+import { Button } from "@opencode-ai/ui/button"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { Dialog } from "@opencode-ai/ui/dialog"
 import { FileIcon } from "@opencode-ai/ui/file-icon"
+import { Icon } from "@opencode-ai/ui/icon"
 import { List } from "@opencode-ai/ui/list"
 import type { ListRef } from "@opencode-ai/ui/list"
+import { TextField } from "@opencode-ai/ui/text-field"
+import { showToast } from "@opencode-ai/ui/toast"
 import { getDirectory, getFilename } from "@opencode-ai/util/path"
 import fuzzysort from "fuzzysort"
-import { createMemo, createResource, createSignal } from "solid-js"
+import { createEffect, createMemo, createResource, createSignal, Show } from "solid-js"
+import { createStore } from "solid-js/store"
 import { useGlobalSDK } from "@/context/global-sdk"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLayout } from "@/context/layout"
@@ -20,7 +25,8 @@ interface DialogSelectDirectoryProps {
 type Row = {
   absolute: string
   search: string
-  group: "recent" | "folders"
+  group: "recent" | "folders" | "browser"
+  mode: "open" | "browse"
 }
 
 function cleanInput(value: string) {
@@ -103,7 +109,7 @@ function displayPath(path: string, input: string, home: string) {
   return tildeOf(full, home) || full
 }
 
-function toRow(absolute: string, home: string, group: Row["group"]): Row {
+function toRow(absolute: string, home: string, group: Row["group"], mode: Row["mode"]): Row {
   const full = trimTrailing(absolute)
   const tilde = tildeOf(full, home)
   const withSlash = (value: string) => {
@@ -115,19 +121,26 @@ function toRow(absolute: string, home: string, group: Row["group"]): Row {
   const search = Array.from(
     new Set([full, withSlash(full), tilde, withSlash(tilde), getFilename(full)].filter(Boolean)),
   ).join("\n")
-  return { absolute: full, search, group }
+  return { absolute: full, search, group, mode }
 }
 
 function uniqueRows(rows: Row[]) {
   const seen = new Set<string>()
   return rows.filter((row) => {
-    if (seen.has(row.absolute)) return false
-    seen.add(row.absolute)
+    const key = `${row.mode}:${row.absolute}`
+    if (seen.has(key)) return false
+    seen.add(key)
     return true
   })
 }
 
-function useDirectorySearch(args: {
+function errorMessage(err: unknown, fallback: string) {
+  if (err instanceof Error && err.message) return err.message
+  if (typeof err === "string" && err) return err
+  return fallback
+}
+
+function useDirectoryBrowser(args: {
   sdk: ReturnType<typeof useGlobalSDK>
   start: () => string | undefined
   home: () => string
@@ -151,7 +164,7 @@ function useDirectorySearch(args: {
     return { directory: trimTrailing(base), path: raw }
   }
 
-  const dirs = async (dir: string) => {
+  const list = async (dir: string) => {
     const key = trimTrailing(dir)
     const existing = cache.get(key)
     if (existing) return existing
@@ -166,7 +179,8 @@ function useDirectorySearch(args: {
           .map((n) => ({
             name: n.name,
             absolute: trimTrailing(normalizeDriveRoot(n.absolute)),
-          })),
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
       )
 
     cache.set(key, request)
@@ -174,74 +188,84 @@ function useDirectorySearch(args: {
   }
 
   const match = async (dir: string, query: string, limit: number) => {
-    const items = await dirs(dir)
+    const items = await list(dir)
     if (!query) return items.slice(0, limit).map((x) => x.absolute)
     return fuzzysort.go(query, items, { key: "name", limit }).map((x) => x.obj.absolute)
   }
 
-  return async (filter: string) => {
-    const token = ++current
-    const active = () => token === current
+  return {
+    clear(dir?: string) {
+      if (!dir) {
+        cache.clear()
+        return
+      }
+      cache.delete(trimTrailing(dir))
+    },
+    list: (dir: string) => list(dir).then((items) => items.map((item) => item.absolute)),
+    async search(filter: string) {
+      const token = ++current
+      const active = () => token === current
 
-    const value = cleanInput(filter)
-    const scopedInput = scoped(value)
-    if (!scopedInput) return [] as string[]
+      const value = cleanInput(filter)
+      const scopedInput = scoped(value)
+      if (!scopedInput) return [] as string[]
 
-    const raw = normalizeDriveRoot(value)
-    const isPath = raw.startsWith("~") || !!rootOf(raw) || raw.includes("/")
-    const query = normalizeDriveRoot(scopedInput.path)
+      const raw = normalizeDriveRoot(value)
+      const isPath = raw.startsWith("~") || !!rootOf(raw) || raw.includes("/")
+      const query = normalizeDriveRoot(scopedInput.path)
 
-    const find = () =>
-      args.sdk.client.find
-        .files({ directory: scopedInput.directory, query, type: "directory", limit: 50 })
-        .then((x) => x.data ?? [])
-        .catch(() => [])
+      const find = () =>
+        args.sdk.client.find
+          .files({ directory: scopedInput.directory, query, type: "directory", limit: 50 })
+          .then((x) => x.data ?? [])
+          .catch(() => [])
 
-    if (!isPath) {
-      const results = await find()
-      if (!active()) return []
-      return results.map((rel) => joinPath(scopedInput.directory, rel)).slice(0, 50)
-    }
-
-    const segments = query.replace(/^\/+/, "").split("/")
-    const head = segments.slice(0, segments.length - 1).filter((x) => x && x !== ".")
-    const tail = segments[segments.length - 1] ?? ""
-
-    const cap = 12
-    const branch = 4
-    let paths = [scopedInput.directory]
-    for (const part of head) {
-      if (!active()) return []
-      if (part === "..") {
-        paths = paths.map(parentOf)
-        continue
+      if (!isPath) {
+        const results = await find()
+        if (!active()) return []
+        return results.map((rel) => joinPath(scopedInput.directory, rel)).slice(0, 50)
       }
 
-      const next = (await Promise.all(paths.map((p) => match(p, part, branch)))).flat()
+      const segments = query.replace(/^\/+/, "").split("/")
+      const head = segments.slice(0, segments.length - 1).filter((x) => x && x !== ".")
+      const tail = segments[segments.length - 1] ?? ""
+
+      const cap = 12
+      const branch = 4
+      let paths = [scopedInput.directory]
+      for (const part of head) {
+        if (!active()) return []
+        if (part === "..") {
+          paths = paths.map(parentOf)
+          continue
+        }
+
+        const next = (await Promise.all(paths.map((p) => match(p, part, branch)))).flat()
+        if (!active()) return []
+        paths = Array.from(new Set(next)).slice(0, cap)
+        if (paths.length === 0) return [] as string[]
+      }
+
+      const out = (await Promise.all(paths.map((p) => match(p, tail, 50)))).flat()
       if (!active()) return []
-      paths = Array.from(new Set(next)).slice(0, cap)
-      if (paths.length === 0) return [] as string[]
-    }
+      const deduped = Array.from(new Set(out))
+      const base = raw.startsWith("~") ? trimTrailing(scopedInput.directory) : ""
+      const expand = !raw.endsWith("/")
+      if (!expand || !tail) {
+        const items = base ? Array.from(new Set([base, ...deduped])) : deduped
+        return items.slice(0, 50)
+      }
 
-    const out = (await Promise.all(paths.map((p) => match(p, tail, 50)))).flat()
-    if (!active()) return []
-    const deduped = Array.from(new Set(out))
-    const base = raw.startsWith("~") ? trimTrailing(scopedInput.directory) : ""
-    const expand = !raw.endsWith("/")
-    if (!expand || !tail) {
-      const items = base ? Array.from(new Set([base, ...deduped])) : deduped
-      return items.slice(0, 50)
-    }
+      const needle = tail.toLowerCase()
+      const exact = deduped.filter((p) => getFilename(p).toLowerCase() === needle)
+      const target = exact[0]
+      if (!target) return deduped.slice(0, 50)
 
-    const needle = tail.toLowerCase()
-    const exact = deduped.filter((p) => getFilename(p).toLowerCase() === needle)
-    const target = exact[0]
-    if (!target) return deduped.slice(0, 50)
-
-    const children = await match(target, "", 30)
-    if (!active()) return []
-    const items = Array.from(new Set([...deduped, ...children]))
-    return (base ? Array.from(new Set([base, ...items])) : items).slice(0, 50)
+      const children = await match(target, "", 30)
+      if (!active()) return []
+      const items = Array.from(new Set([...deduped, ...children]))
+      return (base ? Array.from(new Set([base, ...items])) : items).slice(0, 50)
+    },
   }
 }
 
@@ -253,6 +277,12 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   const language = useLanguage()
 
   const [filter, setFilter] = createSignal("")
+  const [tick, setTick] = createSignal(0)
+  const [store, setStore] = createStore({
+    creating: false,
+    name: "",
+    saving: false,
+  })
   let list: ListRef | undefined
 
   const missingBase = createMemo(() => !(sync.data.path.home || sync.data.path.directory))
@@ -271,12 +301,22 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   const start = createMemo(
     () => sync.data.path.home || sync.data.path.directory || fallbackPath()?.home || fallbackPath()?.directory,
   )
+  const [cwd, setCwd] = createSignal("")
 
-  const directories = useDirectorySearch({
+  const browser = useDirectoryBrowser({
     sdk,
     home,
     start,
   })
+
+  const current = createMemo(() => trimTrailing(cwd() || start() || ""))
+  const atRoot = createMemo(() => {
+    const dir = current()
+    if (!dir) return true
+    return parentOf(dir) === dir
+  })
+  const title = createMemo(() => props.title ?? language.t("command.project.open"))
+  const currentLabel = createMemo(() => displayPath(current(), "", home()))
 
   const recentProjects = createMemo(() => {
     const projects = layout.projects.list()
@@ -301,7 +341,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
       .sort((a, b) => b.at - a.at || a.index - b.index)
       .slice(0, 5)
       .map(({ project }) => {
-        const row = toRow(project.worktree, home(), "recent")
+        const row = toRow(project.worktree, home(), "recent", "open")
         const name = project.name || getFilename(project.worktree)
         return {
           ...row,
@@ -310,10 +350,30 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
       })
   })
 
+  createEffect(() => {
+    const dir = start()
+    if (!cwd() && dir) setCwd(trimTrailing(dir))
+  })
+
+  const refresh = () => setTick((value) => value + 1)
+
   const items = async (value: string) => {
-    const results = await directories(value)
-    const directoryRows = results.map((absolute) => toRow(absolute, home(), "folders"))
-    return uniqueRows([...recentProjects(), ...directoryRows])
+    tick()
+    const query = cleanInput(value)
+    if (!query) {
+      const dir = current()
+      const rows = dir
+        ? [
+            toRow(dir, home(), "browser", "open"),
+            ...(await browser.list(dir)).map((absolute) => toRow(absolute, home(), "browser", "browse")),
+          ]
+        : []
+      return uniqueRows([...rows, ...recentProjects()])
+    }
+
+    const results = await browser.search(query)
+    const rows = results.map((absolute) => toRow(absolute, home(), "folders", "open"))
+    return uniqueRows([...recentProjects(), ...rows])
   }
 
   function resolve(absolute: string) {
@@ -321,72 +381,191 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
     dialog.close()
   }
 
+  async function mkdir() {
+    const name = cleanInput(store.name)
+    if (!name) return
+
+    setStore("saving", true)
+    await sdk.client.file
+      .mkdir({
+        directory: current(),
+        path: "",
+        name,
+      })
+      .then((x) => {
+        const next = x.data?.absolute ? trimTrailing(x.data.absolute) : joinPath(current(), name)
+        browser.clear(current())
+        browser.clear(next)
+        setCwd(next)
+        setStore("name", "")
+        setStore("creating", false)
+        setFilter("")
+        list?.setFilter("")
+        refresh()
+      })
+      .catch((err) => {
+        showToast({
+          variant: "error",
+          title: language.t("common.requestFailed"),
+          description: errorMessage(err, language.t("common.requestFailed")),
+        })
+      })
+      .finally(() => {
+        setStore("saving", false)
+      })
+  }
+
   return (
-    <Dialog title={props.title ?? language.t("command.project.open")}>
-      <List
-        search={{ placeholder: language.t("dialog.directory.search.placeholder"), autofocus: true }}
-        emptyMessage={language.t("dialog.directory.empty")}
-        loadingMessage={language.t("common.loading")}
-        items={items}
-        key={(x) => x.absolute}
-        filterKeys={["search"]}
-        groupBy={(item) => item.group}
-        sortGroupsBy={(a, b) => {
-          if (a.category === b.category) return 0
-          return a.category === "recent" ? -1 : 1
-        }}
-        groupHeader={(group) =>
-          group.category === "recent" ? language.t("home.recentProjects") : language.t("command.project.open")
-        }
-        ref={(r) => (list = r)}
-        onFilter={(value) => setFilter(cleanInput(value))}
-        onKeyEvent={(e, item) => {
-          if (e.key !== "Tab") return
-          if (e.shiftKey) return
-          if (!item) return
+    <Dialog
+      title={title()}
+      description={
+        <div class="min-w-0 flex items-center gap-2 text-12-regular text-text-weak">
+          <Icon name="folder" size="small" />
+          <span class="truncate">{currentLabel() || "~"}</span>
+        </div>
+      }
+      action={
+        <div class="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="normal"
+            icon="chevron-left"
+            disabled={atRoot()}
+            onClick={() => {
+              const dir = current()
+              if (!dir) return
+              setCwd(parentOf(dir))
+              setFilter("")
+              list?.setFilter("")
+              refresh()
+            }}
+          >
+            Up
+          </Button>
+          <Button
+            type="button"
+            variant={store.creating ? "secondary" : "ghost"}
+            size="normal"
+            icon="plus"
+            onClick={() => setStore("creating", (value) => !value)}
+          >
+            New folder
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size="normal"
+            onClick={() => resolve(current())}
+            disabled={!current()}
+          >
+            {language.t("common.open")}
+          </Button>
+        </div>
+      }
+    >
+      <div class="flex flex-col gap-3">
+        <Show when={store.creating}>
+          <form
+            class="px-1 flex items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void mkdir()
+            }}
+          >
+            <TextField
+              autofocus
+              class="flex-1"
+              label="Folder name"
+              hideLabel
+              placeholder="Folder name"
+              value={store.name}
+              onChange={(value) => setStore("name", value)}
+            />
+            <Button type="submit" size="normal" disabled={store.saving || !cleanInput(store.name)}>
+              {store.saving ? language.t("common.loading") : "Create"}
+            </Button>
+          </form>
+        </Show>
+        <List
+          search={{ placeholder: language.t("dialog.directory.search.placeholder"), autofocus: !store.creating }}
+          emptyMessage={language.t("dialog.directory.empty")}
+          loadingMessage={language.t("common.loading")}
+          items={items}
+          key={(x) => `${x.mode}:${x.absolute}`}
+          filterKeys={["search"]}
+          groupBy={(item) => item.group}
+          sortGroupsBy={(a, b) => {
+            const order = ["browser", "recent", "folders"]
+            return order.indexOf(a.category) - order.indexOf(b.category)
+          }}
+          groupHeader={(group) => {
+            if (group.category === "browser") return "Folders here"
+            if (group.category === "recent") return language.t("home.recentProjects")
+            return "Search results"
+          }}
+          ref={(r) => (list = r)}
+          onFilter={(value) => setFilter(cleanInput(value))}
+          onKeyEvent={(e, item) => {
+            if (e.key !== "Tab") return
+            if (e.shiftKey) return
+            if (!item) return
 
-          e.preventDefault()
-          e.stopPropagation()
+            e.preventDefault()
+            e.stopPropagation()
 
-          const value = displayPath(item.absolute, filter(), home())
-          list?.setFilter(value.endsWith("/") ? value : value + "/")
-        }}
-        onSelect={(path) => {
-          if (!path) return
-          resolve(path.absolute)
-        }}
-      >
-        {(item) => {
-          const path = displayPath(item.absolute, filter(), home())
-          if (path === "~") {
+            const value = displayPath(item.absolute, filter(), home())
+            list?.setFilter(value.endsWith("/") ? value : value + "/")
+          }}
+          onSelect={(item) => {
+            if (!item) return
+            if (!cleanInput(filter()) && item.mode === "browse") {
+              setCwd(item.absolute)
+              refresh()
+              return
+            }
+            resolve(item.absolute)
+          }}
+        >
+          {(item) => {
+            const path = displayPath(item.absolute, filter(), home())
+            const open = item.mode === "open"
+            if (path === "~") {
+              return (
+                <div class="w-full flex items-center justify-between rounded-md">
+                  <div class="flex items-center gap-x-3 grow min-w-0">
+                    <FileIcon node={{ path: item.absolute, type: "directory" }} class="shrink-0 size-4" />
+                    <div class="flex items-center text-14-regular min-w-0">
+                      <span class="text-text-strong whitespace-nowrap">~</span>
+                      <span class="text-text-weak whitespace-nowrap">/</span>
+                    </div>
+                  </div>
+                  <Show when={!open}>
+                    <Icon name="chevron-right" size="small" class="text-text-weaker" />
+                  </Show>
+                </div>
+              )
+            }
             return (
               <div class="w-full flex items-center justify-between rounded-md">
                 <div class="flex items-center gap-x-3 grow min-w-0">
                   <FileIcon node={{ path: item.absolute, type: "directory" }} class="shrink-0 size-4" />
                   <div class="flex items-center text-14-regular min-w-0">
-                    <span class="text-text-strong whitespace-nowrap">~</span>
+                    <span class="text-text-weak whitespace-nowrap overflow-hidden overflow-ellipsis truncate min-w-0">
+                      {getDirectory(path)}
+                    </span>
+                    <span class="text-text-strong whitespace-nowrap">{getFilename(path)}</span>
                     <span class="text-text-weak whitespace-nowrap">/</span>
                   </div>
                 </div>
+                <Show when={!open}>
+                  <Icon name="chevron-right" size="small" class="text-text-weaker" />
+                </Show>
               </div>
             )
-          }
-          return (
-            <div class="w-full flex items-center justify-between rounded-md">
-              <div class="flex items-center gap-x-3 grow min-w-0">
-                <FileIcon node={{ path: item.absolute, type: "directory" }} class="shrink-0 size-4" />
-                <div class="flex items-center text-14-regular min-w-0">
-                  <span class="text-text-weak whitespace-nowrap overflow-hidden overflow-ellipsis truncate min-w-0">
-                    {getDirectory(path)}
-                  </span>
-                  <span class="text-text-strong whitespace-nowrap">{getFilename(path)}</span>
-                  <span class="text-text-weak whitespace-nowrap">/</span>
-                </div>
-              </div>
-            </div>
-          )
-        }}
-      </List>
+          }}
+        </List>
+      </div>
     </Dialog>
   )
 }

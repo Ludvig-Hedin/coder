@@ -612,6 +612,28 @@ export namespace File {
     })
   }
 
+  export async function mkdir(input: { path?: string; name: string }) {
+    const name = input.name.trim()
+    if (!name) throw new Error("Directory name is required")
+
+    const base = input.path ? path.join(Instance.directory, input.path) : Instance.directory
+    const full = path.join(base, name)
+
+    if (!Instance.containsPath(base) || !Instance.containsPath(full)) {
+      throw new Error(`Access denied: path escapes project directory`)
+    }
+
+    await fs.promises.mkdir(full, { recursive: true })
+
+    return {
+      name: path.basename(full),
+      path: path.relative(Instance.directory, full),
+      absolute: full,
+      type: "directory" as const,
+      ignored: false,
+    }
+  }
+
   export async function search(input: { query: string; limit?: number; dirs?: boolean; type?: "file" | "directory" }) {
     const query = input.query.trim()
     const limit = input.limit ?? 100
