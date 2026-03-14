@@ -2,7 +2,7 @@ FROM oven/bun:1.3.10-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache ripgrep libgcc libstdc++
+RUN apk add --no-cache python3 make g++ ripgrep libgcc libstdc++
 
 COPY package.json bun.lock ./
 COPY patches ./patches
