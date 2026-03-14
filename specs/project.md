@@ -67,3 +67,4 @@ GET /project/:projectID/find/file?directory=<resolve path> -> File
 ### recent notes
 
 - 2026-03-14: Fixed the session composer footer so tray controls under the chat input keep their intended contrast, and corrected the prompt mode transition so shell-mode chrome does not remain visibly overlaid in normal mode.
+- 2026-03-14: Upgraded follow-up queueing in the session composer with queue-first behavior while the assistant is busy, immediate send via Cmd/Ctrl+Enter, and a reorderable queued-message list with send, edit, delete, and queue-toggle actions.

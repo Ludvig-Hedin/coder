@@ -276,6 +276,8 @@ export const dict = {
   "prompt.action.attachFile": "Add file",
   "prompt.attachment.remove": "Remove attachment",
   "prompt.action.send": "Send",
+  "prompt.action.queue": "Queue message",
+  "prompt.action.sendNow": "Send immediately",
   "prompt.action.stop": "Stop",
 
   "prompt.toast.pasteUnsupported.title": "Unsupported attachment",
@@ -555,6 +557,9 @@ export const dict = {
   "session.followupDock.summary.other": "{{count}} queued messages",
   "session.followupDock.sendNow": "Send now",
   "session.followupDock.edit": "Edit",
+  "session.followupDock.editMessage": "Edit message",
+  "session.followupDock.disableQueue": "Turn off queueing",
+  "session.followupDock.reorder": "Reorder queued message",
   "session.followupDock.collapse": "Collapse queued messages",
   "session.followupDock.expand": "Expand queued messages",
   "session.revertDock.summary.one": "{{count}} rolled back message",

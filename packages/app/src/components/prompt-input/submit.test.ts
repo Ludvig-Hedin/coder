@@ -20,6 +20,7 @@ const storedSessions: Record<string, Array<{ id: string; title?: string }>> = {}
 const promoted: Array<{ directory: string; sessionID: string }> = []
 const sentShell: string[] = []
 const syncedDirectories: string[] = []
+const queued: string[] = []
 
 let params: { id?: string } = {}
 let selected = "/repo/worktree-a"
@@ -211,6 +212,7 @@ beforeEach(() => {
   params = {}
   sentShell.length = 0
   syncedDirectories.length = 0
+  queued.length = 0
   selected = "/repo/worktree-a"
   variant = undefined
   for (const key of Object.keys(storedSessions)) delete storedSessions[key]
@@ -342,5 +344,65 @@ describe("prompt submit worktree selection", () => {
 
     expect(storedSessions["/repo/worktree-a"]).toEqual([{ id: "session-1", title: "New session 1" }])
     expect(optimisticSeeded).toEqual([true])
+  })
+
+  test("queues follow-up prompts by default while busy", async () => {
+    params = { id: "session-1" }
+
+    const submit = createPromptSubmit({
+      info: () => ({ id: "session-1" }),
+      imageAttachments: () => [],
+      commentCount: () => 0,
+      autoAccept: () => false,
+      mode: () => "normal",
+      working: () => true,
+      editor: () => undefined,
+      queueScroll: () => undefined,
+      promptLength: (value) => value.reduce((sum, part) => sum + ("content" in part ? part.content.length : 0), 0),
+      addToHistory: () => undefined,
+      resetHistoryNavigation: () => undefined,
+      setMode: () => undefined,
+      setPopover: () => undefined,
+      shouldQueue: () => true,
+      onQueue: (draft) => queued.push(draft.sessionID),
+      onSubmit: () => undefined,
+    })
+
+    const event = { preventDefault: () => undefined } as unknown as Event
+
+    await submit.handleSubmit(event)
+
+    expect(queued).toEqual(["session-1"])
+    expect(optimistic).toHaveLength(0)
+  })
+
+  test("bypasses queue on immediate submit", async () => {
+    params = { id: "session-1" }
+
+    const submit = createPromptSubmit({
+      info: () => ({ id: "session-1" }),
+      imageAttachments: () => [],
+      commentCount: () => 0,
+      autoAccept: () => false,
+      mode: () => "normal",
+      working: () => true,
+      editor: () => undefined,
+      queueScroll: () => undefined,
+      promptLength: (value) => value.reduce((sum, part) => sum + ("content" in part ? part.content.length : 0), 0),
+      addToHistory: () => undefined,
+      resetHistoryNavigation: () => undefined,
+      setMode: () => undefined,
+      setPopover: () => undefined,
+      shouldQueue: () => true,
+      onQueue: (draft) => queued.push(draft.sessionID),
+      onSubmit: () => undefined,
+    })
+
+    const event = { preventDefault: () => undefined } as unknown as Event
+
+    await submit.handleSubmit(event, { immediate: true })
+
+    expect(queued).toHaveLength(0)
+    expect(optimistic).toHaveLength(1)
   })
 })

@@ -46,7 +46,7 @@ const defaultSettings: Settings = {
   general: {
     autoSave: true,
     releaseNotes: true,
-    followup: "steer",
+    followup: "queue",
     showReasoningSummaries: false,
     shellToolPartsExpanded: true,
     editToolPartsExpanded: false,
