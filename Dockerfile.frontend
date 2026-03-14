@@ -20,12 +20,11 @@ COPY packages/desktop/package.json ./packages/desktop/
 COPY packages/desktop-electron/package.json ./packages/desktop-electron/
 COPY packages/app/package.json ./packages/app/
 
-RUN mkdir -p packages/console/app packages/console/core packages/console/function packages/console/mail packages/console/resource
-COPY packages/console/app/package.json ./packages/console/app/ 2>/dev/null || true
-COPY packages/console/core/package.json ./packages/console/core/ 2>/dev/null || true
-COPY packages/console/function/package.json ./packages/console/function/ 2>/dev/null || true
-COPY packages/console/mail/package.json ./packages/console/mail/ 2>/dev/null || true
-COPY packages/console/resource/package.json ./packages/console/resource/ 2>/dev/null || true
+COPY packages/console/app/package.json ./packages/console/app/
+COPY packages/console/core/package.json ./packages/console/core/
+COPY packages/console/function/package.json ./packages/console/function/
+COPY packages/console/mail/package.json ./packages/console/mail/
+COPY packages/console/resource/package.json ./packages/console/resource/
 
 RUN bun install
 
