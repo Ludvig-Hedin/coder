@@ -34,6 +34,8 @@ WORKDIR /app/packages/opencode
 
 ENV NODE_ENV=production
 
+RUN chmod +x ./start.sh
+
 EXPOSE 4096
 
-CMD ["sh", "-c", "bun run --conditions=browser ./src/index.ts serve --port ${PORT:-4096} --hostname 0.0.0.0 --cors https://cloud-agent-dev.vercel.app"]
+CMD ["./start.sh"]

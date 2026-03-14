@@ -9,7 +9,7 @@
 @theme {
   --*: initial;
 
-  --spacing: 0.25rem;
+  --spacing: 0.2rem;
   /* --spacing: var(--spacing); */
 
   --breakpoint-sm: 40rem;
@@ -56,11 +56,11 @@
   --tracking-tight: var(--letter-spacing-tight);
   --tracking-tightest: var(--letter-spacing-tightest);
 
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.625rem;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 
   --shadow-xs: var(--shadow-xs);
   --shadow-md: var(--shadow-md);

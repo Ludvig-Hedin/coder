@@ -14,12 +14,13 @@
   --line-height-large: 150%;
   --line-height-x-large: 180%;
   --line-height-2x-large: 200%;
-  --letter-spacing-normal: 0;
-  --letter-spacing-tight: -0.1599999964237213;
-  --letter-spacing-tightest: -0.3199999928474426;
+  /* Typography: Tighter tracking for denser, more refined text */
+  --letter-spacing-normal: -0.01em; /* Slight negative tracking for body text */
+  --letter-spacing-tight: -0.025em; /* Tighter for headings and labels */
+  --letter-spacing-tightest: -0.04em; /* Maximum tightness for large display text */
   --paragraph-spacing-base: 0;
 
-  --spacing: 0.25rem;
+  --spacing: 0.2rem;
 
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
@@ -41,11 +42,12 @@
   --container-6xl: 72rem;
   --container-7xl: 80rem;
 
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.625rem;
+  /* Ultra-rounded radius scale: pill-shaped, premium feel */
+  --radius-xs: 0.5rem; /* 8px - micro elements */
+  --radius-sm: 0.75rem; /* 12px - small elements */
+  --radius-md: 1rem; /* 16px - buttons, inputs */
+  --radius-lg: 1.25rem; /* 20px - cards, panels */
+  --radius-xl: 1.75rem; /* 28px - major containers */
 
   --shadow-xs:
     0 1px 2px -0.5px light-dark(hsl(0 0% 0% / 0.04), hsl(0 0% 0% / 0.06)),
@@ -90,10 +92,10 @@
   --text-mix-blend-mode: multiply;
 
   /* OC-2 fallback variables (light) */
-  --background-base: #f8f8f8;
-  --background-weak: #f3f3f3;
-  --background-strong: #fcfcfc;
-  --background-stronger: #fcfcfc;
+  --background-base: #ffffff;
+  --background-weak: #f5f5f5;
+  --background-strong: #ffffff;
+  --background-stronger: #ffffff;
   --surface-base: rgba(0, 0, 0, 0.031);
   --base: rgba(0, 0, 0, 0.034);
   --surface-base-hover: rgba(0, 0, 0, 0.059);
@@ -160,9 +162,10 @@
   --input-selected: #e0eaff;
   --input-focus: #fcfdff;
   --input-disabled: #ededed;
-  --text-base: #6f6f6f;
-  --text-weak: #8f8f8f;
-  --text-weaker: #c7c7c7;
+  --text-base: #555555;
+  --text-weak: #888888;
+  --text-weaker: #cccccc;
+  /* Using softer black instead of pure #000000 for better visual comfort */
   --text-strong: #171717;
   --text-invert-base: #f8f8f8;
   --text-invert-weak: #f3f3f3;
@@ -196,13 +199,13 @@
   --button-secondary-hover: #f8f8f8;
   --button-ghost-hover: rgba(0, 0, 0, 0.031);
   --button-ghost-hover2: rgba(0, 0, 0, 0.051);
-  --border-base: rgba(0, 0, 0, 0.162);
-  --border-hover: rgba(0, 0, 0, 0.236);
-  --border-active: rgba(0, 0, 0, 0.46);
-  --border-selected: rgba(3, 76, 255, 0.99);
-  --border-disabled: rgba(0, 0, 0, 0.236);
-  --border-focus: rgba(0, 0, 0, 0.46);
-  --border-weak-base: #e5e5e5;
+  --border-base: rgba(0, 0, 0, 0.1);
+  --border-hover: rgba(0, 0, 0, 0.2);
+  --border-active: rgba(0, 0, 0, 0.3);
+  --border-selected: #000000;
+  --border-disabled: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(0, 0, 0, 0.3);
+  --border-weak-base: #eeeeee;
   --border-strong-base: rgba(0, 0, 0, 0.151);
   --border-strong-hover: rgba(0, 0, 0, 0.232);
   --border-strong-active: rgba(0, 0, 0, 0.151);
@@ -298,18 +301,20 @@
   --icon-diff-delete-base: #ed4831;
   --icon-diff-delete-hover: #ca2d17;
   --icon-diff-modified-base: #ff8c00;
-  --syntax-comment: var(--text-weak);
-  --syntax-regexp: var(--text-base);
-  --syntax-string: #006656;
-  --syntax-keyword: var(--text-weak);
-  --syntax-primitive: #fb4804;
-  --syntax-operator: var(--text-base);
-  --syntax-variable: var(--text-strong);
-  --syntax-property: #ed6dc8;
-  --syntax-type: #596600;
-  --syntax-constant: #007b80;
-  --syntax-punctuation: var(--text-base);
-  --syntax-object: var(--text-strong);
+  /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
+  --syntax-comment: var(--text-weaker); /* Muted gray for comments */
+  --syntax-regexp: var(--text-base); /* Standard text for regex */
+  --syntax-string: var(--text-strong); /* Strong text for strings - monochrome */
+  --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
+  --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
+  --syntax-operator: var(--text-base); /* Standard for operators */
+  --syntax-variable: var(--text-strong); /* Strong for variables */
+  --syntax-property: var(--text-base); /* Standard for properties - monochrome */
+  --syntax-type: var(--text-weak); /* Muted for types - monochrome */
+  --syntax-constant: var(--text-strong); /* Strong for constants - monochrome */
+  --syntax-punctuation: var(--text-weaker); /* Muted for punctuation */
+  --syntax-object: var(--text-strong); /* Strong for objects */
+  /* Status colors remain vivid for semantic meaning */
   --syntax-success: #2dba26;
   --syntax-warning: #efa72e;
   --syntax-critical: #ed4831;
@@ -317,20 +322,21 @@
   --syntax-diff-add: #3a8437;
   --syntax-diff-delete: #ca2d17;
   --syntax-diff-unknown: #ff0000;
-  --markdown-heading: #d68c27;
-  --markdown-text: #1a1a1a;
-  --markdown-link: #3b7dd8;
-  --markdown-link-text: #318795;
-  --markdown-code: #3d9a57;
-  --markdown-block-quote: #b0851f;
-  --markdown-emph: #b0851f;
-  --markdown-strong: #d68c27;
-  --markdown-horizontal-rule: #8a8a8a;
-  --markdown-list-item: #3b7dd8;
-  --markdown-list-enumeration: #318795;
-  --markdown-image: #3b7dd8;
-  --markdown-image-text: #318795;
-  --markdown-code-block: #1a1a1a;
+  /* Monochrome markdown: All structural elements use grayscale palette */
+  --markdown-heading: var(--text-strong); /* Strong text for headings */
+  --markdown-text: var(--text-base); /* Standard body text */
+  --markdown-link: var(--text-strong); /* Strong for links - monochrome */
+  --markdown-link-text: var(--text-base); /* Standard for link text */
+  --markdown-code: var(--text-strong); /* Strong for inline code */
+  --markdown-block-quote: var(--text-weak); /* Muted for quotes */
+  --markdown-emph: var(--text-base); /* Standard for emphasis */
+  --markdown-strong: var(--text-stronger); /* Strongest for bold */
+  --markdown-horizontal-rule: var(--border-base); /* Subtle divider */
+  --markdown-list-item: var(--text-base); /* Standard for list items */
+  --markdown-list-enumeration: var(--text-weak); /* Muted for numbers */
+  --markdown-image: var(--text-base); /* Standard for images */
+  --markdown-image-text: var(--text-weak); /* Muted for captions */
+  --markdown-code-block: var(--text-strong); /* Strong for code blocks */
   --avatar-background-pink: #feeef8;
   --avatar-background-mint: #e1fbf4;
   --avatar-background-orange: #fff1e7;
@@ -350,10 +356,10 @@
     --text-mix-blend-mode: plus-lighter;
 
     /* OC-2 fallback variables (dark) */
-    --background-base: #101010;
-    --background-weak: #1e1e1e;
-    --background-strong: #121212;
-    --background-stronger: #151515;
+    --background-base: #000000;
+    --background-weak: #111111;
+    --background-strong: #0a0a0a;
+    --background-stronger: #0f0f0f;
     --surface-base: rgba(255, 255, 255, 0.031);
     --base: rgba(255, 255, 255, 0.034);
     --surface-base-hover: rgba(255, 255, 255, 0.039);
@@ -420,10 +426,11 @@
     --input-selected: #0b1730;
     --input-focus: #091123;
     --input-disabled: #282828;
-    --text-base: rgba(255, 255, 255, 0.618);
-    --text-weak: rgba(255, 255, 255, 0.422);
-    --text-weaker: rgba(255, 255, 255, 0.284);
-    --text-strong: rgba(255, 255, 255, 0.936);
+    --text-base: rgba(255, 255, 255, 0.7);
+    --text-weak: rgba(255, 255, 255, 0.5);
+    --text-weaker: rgba(255, 255, 255, 0.3);
+    /* Using softer white instead of pure #ffffff for better visual comfort */
+    --text-strong: rgba(255, 255, 255, 0.95);
     --text-invert-base: #a0a0a0;
     --text-invert-weak: #707070;
     --text-invert-weaker: #505050;
@@ -456,13 +463,13 @@
     --button-secondary-hover: rgba(255, 255, 255, 0.039);
     --button-ghost-hover: rgba(255, 255, 255, 0.031);
     --button-ghost-hover2: rgba(255, 255, 255, 0.059);
-    --border-base: rgba(255, 255, 255, 0.195);
-    --border-hover: rgba(255, 255, 255, 0.284);
-    --border-active: rgba(255, 255, 255, 0.418);
-    --border-selected: #9dbefe;
-    --border-disabled: rgba(255, 255, 255, 0.284);
-    --border-focus: rgba(255, 255, 255, 0.418);
-    --border-weak-base: #282828;
+    --border-base: rgba(255, 255, 255, 0.1);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --border-active: rgba(255, 255, 255, 0.3);
+    --border-selected: #ffffff;
+    --border-disabled: rgba(255, 255, 255, 0.1);
+    --border-focus: rgba(255, 255, 255, 0.3);
+    --border-weak-base: #222222;
     --border-strong-base: rgba(255, 255, 255, 0.266);
     --border-strong-hover: rgba(255, 255, 255, 0.266);
     --border-strong-active: rgba(255, 255, 255, 0.266);
@@ -558,18 +565,20 @@
     --icon-diff-delete-base: #fc533a;
     --icon-diff-delete-hover: #f54f36;
     --icon-diff-modified-base: #ffba92;
-    --syntax-comment: var(--text-weak);
-    --syntax-regexp: var(--text-base);
-    --syntax-string: #00ceb9;
-    --syntax-keyword: var(--text-weak);
-    --syntax-primitive: #ffba92;
-    --syntax-operator: var(--text-weak);
-    --syntax-variable: var(--text-strong);
-    --syntax-property: #ff9ae2;
-    --syntax-type: #ecf58c;
-    --syntax-constant: #93e9f6;
-    --syntax-punctuation: var(--text-weak);
-    --syntax-object: var(--text-strong);
+    /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
+    --syntax-comment: var(--text-weaker); /* Muted gray for comments */
+    --syntax-regexp: var(--text-base); /* Standard text for regex */
+    --syntax-string: var(--text-strong); /* Strong text for strings - monochrome */
+    --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
+    --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
+    --syntax-operator: var(--text-weak); /* Muted for operators */
+    --syntax-variable: var(--text-strong); /* Strong for variables */
+    --syntax-property: var(--text-base); /* Standard for properties - monochrome */
+    --syntax-type: var(--text-weak); /* Muted for types - monochrome */
+    --syntax-constant: var(--text-strong); /* Strong for constants - monochrome */
+    --syntax-punctuation: var(--text-weaker); /* Muted for punctuation */
+    --syntax-object: var(--text-strong); /* Strong for objects */
+    /* Status colors remain vivid for semantic meaning */
     --syntax-success: #35c02d;
     --syntax-warning: #f5b238;
     --syntax-critical: #f54f36;
@@ -577,20 +586,21 @@
     --syntax-diff-add: #9bcd97;
     --syntax-diff-delete: #faa494;
     --syntax-diff-unknown: #ff0000;
-    --markdown-heading: #9d7cd8;
-    --markdown-text: #eeeeee;
-    --markdown-link: #fab283;
-    --markdown-link-text: #56b6c2;
-    --markdown-code: #7fd88f;
-    --markdown-block-quote: #e5c07b;
-    --markdown-emph: #e5c07b;
-    --markdown-strong: #f5a742;
-    --markdown-horizontal-rule: #808080;
-    --markdown-list-item: #fab283;
-    --markdown-list-enumeration: #56b6c2;
-    --markdown-image: #fab283;
-    --markdown-image-text: #56b6c2;
-    --markdown-code-block: #eeeeee;
+    /* Monochrome markdown: All structural elements use grayscale palette */
+    --markdown-heading: var(--text-strong); /* Strong text for headings */
+    --markdown-text: var(--text-base); /* Standard body text */
+    --markdown-link: var(--text-strong); /* Strong for links - monochrome */
+    --markdown-link-text: var(--text-base); /* Standard for link text */
+    --markdown-code: var(--text-strong); /* Strong for inline code */
+    --markdown-block-quote: var(--text-weak); /* Muted for quotes */
+    --markdown-emph: var(--text-base); /* Standard for emphasis */
+    --markdown-strong: var(--text-stronger); /* Strongest for bold */
+    --markdown-horizontal-rule: var(--border-base); /* Subtle divider */
+    --markdown-list-item: var(--text-base); /* Standard for list items */
+    --markdown-list-enumeration: var(--text-weak); /* Muted for numbers */
+    --markdown-image: var(--text-base); /* Standard for images */
+    --markdown-image-text: var(--text-weak); /* Muted for captions */
+    --markdown-code-block: var(--text-strong); /* Strong for code blocks */
     --avatar-background-pink: #501b3f;
     --avatar-background-mint: #033a34;
     --avatar-background-orange: #5f2a06;
