@@ -26,4 +26,23 @@
       width: auto;
     }
   }
+
+  .group\/prompt-input[data-dock-surface="shell"] {
+    border-radius: 1.75rem;
+    border: 1px solid var(--border-weaker-base);
+    box-shadow: var(--shadow-xxs-border);
+    background-color: var(--surface-raised-stronger-non-alpha);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .group\/prompt-input[data-dock-surface="shell"]:focus-within {
+    box-shadow: var(--shadow-xs-border-base);
+  }
+
+  [data-dock-surface="tray"][data-dock-attach="top"] {
+    background-color: var(--surface-raised-stronger-non-alpha);
+    backdrop-filter: blur(18px);
+    border-radius: 0 0 1.75rem 1.75rem;
+    box-shadow: var(--shadow-xxs-border);
+  }
 }

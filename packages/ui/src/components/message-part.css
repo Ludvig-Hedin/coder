@@ -130,8 +130,8 @@
     white-space: pre-wrap;
     word-break: break-word;
     overflow: hidden;
-    background: var(--surface-base);
-    border: 1px solid var(--border-weak-base);
+    background: var(--surface-user-message);
+    border: none;
     padding: 8px 12px;
     border-radius: 6px;
 
@@ -494,6 +494,18 @@
   [data-slot="message-part-filename"] {
     color: var(--text-strong);
     flex-shrink: 0;
+  }
+
+  [data-slot="message-part-title-filename"],
+  [data-slot="message-part-filename"],
+  [data-slot="apply-patch-filename"] {
+    background: var(--surface-weak);
+    border-radius: 0.75rem;
+    padding: 0 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: inherit;
   }
 
   [data-slot="message-part-actions"] {
