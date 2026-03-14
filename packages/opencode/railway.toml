@@ -1,6 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile.railway"
+dockerfilePath = "Dockerfile.prod"
 
 [deploy]
 restartPolicyType = "on_failure"
