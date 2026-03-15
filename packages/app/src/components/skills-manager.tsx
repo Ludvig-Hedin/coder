@@ -612,7 +612,7 @@ const SkillCard: Component<{
             <Icon name={props.icon} size="small" />
           </div>
           <div class="min-w-0">
-            <div class="text-11-medium uppercase tracking-[0.04em] text-text-weaker">{props.category}</div>
+              <div class="text-9-medium uppercase tracking-[0.12em] text-text-weaker">{props.category}</div>
             <div class="truncate text-14-medium text-text-strong">{props.title}</div>
           </div>
         </div>
@@ -620,27 +620,43 @@ const SkillCard: Component<{
         <p class="pt-2 line-clamp-2 break-all text-12-regular text-text-weaker">{brief(props.preview, 92)}</p>
       </button>
       <div class="flex items-center gap-2 pt-4">
-        <div class="shrink-0">
-          <Show
-            when={props.added}
-            fallback={
-              <Button size="small" variant="secondary" onClick={props.onAdd} loading={props.saving}>
-                Add
-              </Button>
-            }
-          >
-            <Button size="small" variant="ghost" onClick={props.onRemove} loading={props.removing}>
+          <Show when={props.added}>
+            <Button
+              size="small"
+              variant="secondary"
+              class="flex items-center gap-2 px-3"
+              onClick={props.onRemove}
+              loading={props.removing}
+            >
+              <Icon name="trash" size="small" />
               Remove
             </Button>
           </Show>
+          <Show when={!props.added}>
+            <Button
+              size="small"
+              variant="secondary"
+              class="flex items-center gap-2 px-3"
+              onClick={props.onAdd}
+              loading={props.saving}
+            >
+              <Icon name="plus" size="small" />
+              Add
+            </Button>
+          </Show>
+          <Button
+            size="small"
+            variant="ghost"
+            class="flex items-center gap-2 px-3"
+            onClick={props.onOpen}
+          >
+            <Icon name="arrow-right" size="small" />
+            Read more
+          </Button>
         </div>
-        <Button size="small" variant="ghost" onClick={props.onOpen}>
-          Read more
-        </Button>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
 const DialogSkill: Component<{
   detail: Detail
@@ -670,17 +686,17 @@ const DialogSkill: Component<{
         <div class="flex flex-col gap-2 border-b border-border-weak-base px-2 pb-4 pt-2">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0">
-              <div class="text-11-medium uppercase tracking-[0.04em] text-text-weaker">{kind()}</div>
+              <div class="text-9-medium uppercase tracking-[0.04em] text-text-weaker">{kind()}</div>
               <h2 class="pt-2 text-[28px] font-medium leading-[1.12] tracking-[-0.03em] text-text-strong">
                 {item().name}
               </h2>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-11-medium text-text-weak">
+              <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-9-medium text-text-weak">
                 {source()}
               </span>
               <Show when={added()}>
-                <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-11-medium text-text-weak">
+                <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-9-medium text-text-weak">
                   Installed
                 </span>
               </Show>
@@ -710,6 +726,7 @@ const DialogSkill: Component<{
               fallback={
                 <Button
                   size="small"
+                  class="flex items-center gap-2 px-3"
                   onClick={() =>
                     void props.onAdd().finally(() => {
                       dialog.close()
@@ -717,6 +734,7 @@ const DialogSkill: Component<{
                   }
                   loading={props.saving() === item().name}
                 >
+                <Icon name="plus" size="small" />
                   Add skill
                 </Button>
               }
@@ -724,6 +742,7 @@ const DialogSkill: Component<{
               <Button
                 size="small"
                 variant="ghost"
+                class="flex items-center gap-2 px-3"
                 onClick={() =>
                   void props.onRemove().finally(() => {
                     dialog.close()
@@ -731,6 +750,7 @@ const DialogSkill: Component<{
                 }
                 loading={props.removing() === item().name}
               >
+                  <Icon name="trash" size="small" />
                 Remove skill
               </Button>
             </Show>
