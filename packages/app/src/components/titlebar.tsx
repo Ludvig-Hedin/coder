@@ -49,7 +49,7 @@ export function Titlebar() {
   const windows = createMemo(() => platform.platform === "desktop" && platform.os === "windows")
   const web = createMemo(() => platform.platform === "web")
   const zoom = () => platform.webviewZoom?.() ?? 1
-  const minHeight = () => (mac() ? `${40 / zoom()}px` : undefined)
+  const minHeight = () => (mac() ? `${48 / zoom()}px` : undefined)
 
   const [history, setHistory] = createStore({
     stack: [] as string[],
@@ -161,7 +161,7 @@ export function Titlebar() {
 
   return (
     <header
-      class="h-10 shrink-0 bg-background-base relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center"
+      class="h-12 shrink-0 bg-background-base relative grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center"
       style={{ "min-height": minHeight() }}
       data-tauri-drag-region
       onMouseDown={drag}
@@ -177,9 +177,9 @@ export function Titlebar() {
           <div class="h-full shrink-0" style={{ width: `${72 / zoom()}px` }} />
           <div class="xl:hidden w-10 shrink-0 flex items-center justify-center">
             <IconButton
-              icon="menu"
+              icon={layout.mobileSidebar.opened() ? "sidebar-active" : "sidebar"}
               variant="ghost"
-              class="titlebar-icon rounded-md"
+              class="titlebar-icon rounded-sm w-[32px]"
               onClick={layout.mobileSidebar.toggle}
               aria-label={language.t("sidebar.menu.toggle")}
               aria-expanded={layout.mobileSidebar.opened()}
@@ -189,9 +189,9 @@ export function Titlebar() {
         <Show when={!mac()}>
           <div class="xl:hidden w-[48px] shrink-0 flex items-center justify-center">
             <IconButton
-              icon="menu"
+              icon={layout.mobileSidebar.opened() ? "sidebar-active" : "sidebar"}
               variant="ghost"
-              class="titlebar-icon rounded-md"
+              class="titlebar-icon rounded-sm w-[32px]"
               onClick={layout.mobileSidebar.toggle}
               aria-label={language.t("sidebar.menu.toggle")}
               aria-expanded={layout.mobileSidebar.opened()}
@@ -237,7 +237,7 @@ export function Titlebar() {
                     <Button
                       variant="ghost"
                       icon={creating() ? "new-session-active" : "new-session"}
-                      class="titlebar-icon w-8 h-6 p-0 box-border"
+                      class="titlebar-icon w-8 h-8 p-0 box-border"
                       disabled={layout.sidebar.opened()}
                       tabIndex={layout.sidebar.opened() ? -1 : undefined}
                       onClick={() => {
@@ -264,7 +264,7 @@ export function Titlebar() {
                 <Button
                   variant="ghost"
                   icon="chevron-left"
-                  class="titlebar-icon w-6 h-6 p-0 box-border"
+                  class="titlebar-icon w-8 h-8 p-0 box-border"
                   disabled={!canBack()}
                   onClick={back}
                   aria-label={language.t("common.goBack")}
@@ -274,7 +274,7 @@ export function Titlebar() {
                 <Button
                   variant="ghost"
                   icon="chevron-right"
-                  class="titlebar-icon w-6 h-6 p-0 box-border"
+                  class="titlebar-icon w-8 h-8 p-0 box-border"
                   disabled={!canForward()}
                   onClick={forward}
                   aria-label={language.t("common.goForward")}

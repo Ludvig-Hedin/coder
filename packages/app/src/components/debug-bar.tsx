@@ -363,7 +363,7 @@ export function DebugBar() {
   return (
     <aside
       aria-label={language.t("debugBar.ariaLabel")}
-      class="pointer-events-auto fixed bottom-3 right-3 z-50 w-[308px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border p-0.5 text-text-on-interactive-base shadow-[var(--shadow-lg-border-base)] sm:bottom-4 sm:right-4 sm:w-[324px]"
+      class="hidden pointer-events-auto fixed bottom-3 right-3 z-50 w-[100px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-xl border p-0.5 text-text-on-interactive-base shadow-[var(--shadow-lg-border-base)] sm:bottom-4 sm:right-4 sm:w-[324px]"
       style={{
         "background-color": "color-mix(in srgb, var(--icon-interactive-base) 42%, black)",
         "border-color": "color-mix(in srgb, white 14%, transparent)",
@@ -432,9 +432,9 @@ export function DebugBar() {
             state.heap.used === undefined
               ? language.t("debugBar.mem.tipUnavailable")
               : language.t("debugBar.mem.tip", {
-                  used: mb(state.heap.used) ?? na(),
-                  limit: mb(state.heap.limit) ?? na(),
-                })
+                used: mb(state.heap.used) ?? na(),
+                limit: mb(state.heap.limit) ?? na(),
+              })
           }
           value={heapv()}
           bad={bad(heap(), 0.8)}
