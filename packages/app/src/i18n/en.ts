@@ -421,6 +421,7 @@ export const dict = {
   "language.bs": "Bosanski",
   "language.th": "ไทย",
   "language.tr": "Türkçe",
+  "language.sv": "Svenska",
 
   "toast.language.title": "Language",
   "toast.language.description": "Switched to {{language}}",
@@ -527,6 +528,20 @@ export const dict = {
   "home.empty.description": "Get started by opening a local project",
   "home.empty.action": "Open folder",
 
+  "automations.title": "Automations",
+  "automations.new": "New automation",
+  "automations.section.paused": "Paused",
+  "automations.status.paused": "Paused",
+  "automations.dialog.titleLabel": "Automation title",
+  "automations.dialog.titlePlaceholder": "Automation title",
+  "automations.dialog.promptLabel": "Automation prompt",
+  "automations.dialog.promptPlaceholder": "Add prompt e.g. look for crashes in $sentry",
+  "automations.dialog.create": "Create",
+  "automations.dialog.template.action": "Use template",
+  "automations.dialog.template.title": "Daily stability report",
+  "automations.dialog.template.prompt":
+    "Look for crashes in $sentry, summarize open regressions, and draft a short update for the team.",
+
   "session.tab.session": "Session",
   "session.tab.review": "Review",
   "session.tab.context": "Context",
@@ -605,6 +620,13 @@ export const dict = {
   "session.header.open.app.androidStudio": "Android Studio",
   "session.header.open.app.powershell": "PowerShell",
   "session.header.open.app.sublimeText": "Sublime Text",
+  "session.header.git.heading": "Git actions",
+  "session.header.git.trigger": "Git actions",
+  "session.header.git.commit": "Commit",
+  "session.header.git.push": "Push",
+  "session.header.git.createPr": "Create PR",
+  "session.header.git.createPrHint": "Requires GitHub CLI",
+  "session.header.git.connect": "Connect Git",
 
   "status.popover.trigger": "Status",
   "status.popover.ariaLabel": "Server configurations",
@@ -731,7 +753,7 @@ export const dict = {
   "settings.general.section.display": "Display",
 
   "settings.general.row.language.title": "Language",
-  "settings.general.row.language.description": "Change the display language for OpenCode",
+  "settings.general.row.language.description": "Change the display language for Cloud Code",
   "settings.general.row.appearance.title": "Appearance",
   "settings.general.row.appearance.description": "Customise how OpenCode looks on your device",
   "settings.general.row.colorScheme.title": "Color scheme",

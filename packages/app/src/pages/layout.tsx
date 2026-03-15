@@ -2352,6 +2352,11 @@ export default function Layout(props: ParentProps) {
     server.projects.expand(project.worktree)
     navigateWithSidebarReset(`/${base64Encode(project.worktree)}/session`)
   }
+  const openAutomations = () => {
+    clearSidebarHoverState()
+    navigate("/automations")
+    layout.mobileSidebar.hide()
+  }
   const openNewThread = () => {
     if (params.dir) {
       navigateWithSidebarReset(`/${params.dir}/session`)
@@ -2382,6 +2387,7 @@ export default function Layout(props: ParentProps) {
       onRemoveProject={confirmRemoveProject}
       onArchive={(session) => void archiveSession(session)}
       onNew={openNewThread}
+      onOpenAutomations={openAutomations}
       onOpenProject={() => void chooseProject()}
       onOpenSettings={openSettings}
       onEditThread={(session) => showEditThreadDialog(session)}
