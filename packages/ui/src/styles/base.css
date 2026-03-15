@@ -79,7 +79,23 @@ a {
   color: inherit;
   -webkit-text-decoration: inherit;
   text-decoration: inherit;
-  cursor: default;
+  cursor: pointer;
+}
+
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+[data-action],
+[data-clickable] {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+[data-disabled="true"] {
+  cursor: not-allowed;
 }
 
 *[data-tauri-drag-region] {
