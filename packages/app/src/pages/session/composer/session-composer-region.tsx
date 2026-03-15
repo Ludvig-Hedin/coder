@@ -34,6 +34,9 @@ export function SessionComposerRegion(props: {
     onDelete: (id: string) => void
     onMove: (id: string, to: number) => void
     onEdit: (id: string) => void
+    onRemove: (id: string) => void
+    onMove: (from: string, to: string) => void
+    onDisableQueue: () => void
     onEditLoaded: () => void
   }
   revert?: {
@@ -237,6 +240,9 @@ export function SessionComposerRegion(props: {
                   onDelete={props.followup!.onDelete}
                   onMove={props.followup!.onMove}
                   onEdit={props.followup!.onEdit}
+                  onRemove={props.followup!.onRemove}
+                  onMove={props.followup!.onMove}
+                  onDisableQueue={props.followup!.onDisableQueue}
                 />
               </Show>
               <PromptInput
