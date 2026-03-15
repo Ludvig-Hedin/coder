@@ -327,17 +327,22 @@ export const SkillsManager: Component = () => {
   const installed = createMemo(() => new Set((skills() ?? []).filter(managed).map((item) => item.name)))
   const top = createMemo(() => (skills() ?? []).filter(managed))
   const all = createMemo<Entry[]>(() => {
-    const list: Entry[] = templates.map((item) => ({
-      type: "template",
-      item,
-      added: installed().has(item.name),
-    }))
+    const list: Entry[] = []
+    for (const item of templates) {
+      const added = installed().has(item.name)
+      if (added) continue
+      list.push({
+        type: "template",
+        item,
+        added,
+      })
+    }
     for (const item of skills() ?? []) {
-      if (templates.some((template) => template.name === item.name)) continue
+      if (installed().has(item.name)) continue
       list.push({
         type: "skill",
         item,
-        added: managed(item),
+        added: false,
       })
     }
     return list
