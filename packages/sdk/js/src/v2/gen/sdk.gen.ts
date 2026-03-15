@@ -5,8 +5,15 @@ import { buildClientParams, type Client, type Options as Options2, type TDataSha
 import type {
   AgentPartInput,
   AppAgentsResponses,
+  AppDeleteSkillErrors,
+  AppDeleteSkillResponses,
+  AppInstructionsResponses,
   AppLogErrors,
   AppLogResponses,
+  AppSaveInstructionsErrors,
+  AppSaveInstructionsResponses,
+  AppSaveSkillErrors,
+  AppSaveSkillResponses,
   AppSkillsResponses,
   Auth as Auth3,
   AuthRemoveErrors,
@@ -3835,6 +3842,148 @@ export class App extends HeyApiClient {
       ...options,
       ...params,
     })
+  }
+
+  /**
+   * Save managed skill
+   *
+   * Create or update a managed global skill in the OpenCode config directory.
+   */
+  public saveSkill<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      name?: string
+      description?: string
+      content?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "name" },
+            { in: "body", key: "description" },
+            { in: "body", key: "content" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<AppSaveSkillResponses, AppSaveSkillErrors, ThrowOnError>({
+      url: "/skill",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Delete managed skill
+   *
+   * Delete a managed global skill from the OpenCode config directory.
+   */
+  public deleteSkill<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "name" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).delete<AppDeleteSkillResponses, AppDeleteSkillErrors, ThrowOnError>({
+      url: "/skill/{name}",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get global instructions
+   *
+   * Read the global AGENTS.md instructions file used by the app.
+   */
+  public instructions<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<AppInstructionsResponses, unknown, ThrowOnError>({
+      url: "/instruction",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Save global instructions
+   *
+   * Create or update the global AGENTS.md instructions file used by the app.
+   */
+  public saveInstructions<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      content?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "content" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<AppSaveInstructionsResponses, AppSaveInstructionsErrors, ThrowOnError>(
+      {
+        url: "/instruction",
+        ...options,
+        ...params,
+        headers: {
+          "Content-Type": "application/json",
+          ...options?.headers,
+          ...params.headers,
+        },
+      },
+    )
   }
 }
 

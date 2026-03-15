@@ -10,8 +10,10 @@ import { SettingsGeneral } from "./settings-general"
 import { SettingsKeybinds } from "./settings-keybinds"
 import { SettingsProviders } from "./settings-providers"
 import { SettingsModels } from "./settings-models"
+import { SettingsAssistant } from "./settings-assistant"
+import { SettingsSkills } from "./settings-skills"
 
-export const DialogSettings: Component = () => {
+export const DialogSettings: Component<{ tab?: "general" | "shortcuts" | "assistant" | "skills" | "providers" | "models" }> = (props) => {
   const language = useLanguage()
   const platform = usePlatform()
 
@@ -25,7 +27,7 @@ export const DialogSettings: Component = () => {
           aria-label={language.t("ui.common.close")}
         />
       </div>
-      <Tabs orientation="vertical" variant="settings" defaultValue="general" class="h-full settings-dialog">
+      <Tabs orientation="vertical" variant="settings" defaultValue={props.tab ?? "general"} class="h-full settings-dialog">
         <Tabs.List>
           <div class="flex flex-col justify-between h-full w-full">
             <div class="flex flex-col gap-3 w-full pt-3">
@@ -47,6 +49,14 @@ export const DialogSettings: Component = () => {
                 <div class="flex flex-col gap-1.5">
                   <Tabs.SectionTitle>{language.t("settings.section.server")}</Tabs.SectionTitle>
                   <div class="flex flex-col gap-1.5 w-full">
+                    <Tabs.Trigger value="assistant">
+                      <Icon name="sliders" />
+                      Custom instructions
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="skills">
+                      <Icon name="models" />
+                      Skills
+                    </Tabs.Trigger>
                     <Tabs.Trigger value="providers">
                       <Icon name="providers" />
                       {language.t("settings.providers.title")}
@@ -73,6 +83,12 @@ export const DialogSettings: Component = () => {
         </Tabs.Content>
         <Tabs.Content value="providers" class="no-scrollbar">
           <SettingsProviders />
+        </Tabs.Content>
+        <Tabs.Content value="assistant" class="no-scrollbar">
+          <SettingsAssistant />
+        </Tabs.Content>
+        <Tabs.Content value="skills" class="no-scrollbar">
+          <SettingsSkills />
         </Tabs.Content>
         <Tabs.Content value="models" class="no-scrollbar">
           <SettingsModels />

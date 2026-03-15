@@ -1,6 +1,7 @@
 import { Select as Kobalte } from "@kobalte/core/select"
-import { createMemo, onCleanup, splitProps, type ComponentProps, type JSX } from "solid-js"
+import { createMemo, createSignal, onCleanup, Show, splitProps, type ComponentProps, type JSX } from "solid-js"
 import { pipe, groupBy, entries, map } from "remeda"
+import fuzzysort from "fuzzysort"
 import { Button, ButtonProps } from "./button"
 import { Icon } from "./icon"
 
@@ -20,6 +21,8 @@ export type SelectProps<T> = Omit<ComponentProps<typeof Kobalte<T>>, "value" | "
   triggerStyle?: JSX.CSSProperties
   triggerVariant?: "settings"
   triggerProps?: Record<string, string | number | boolean | undefined>
+  searchable?: boolean
+  searchPlaceholder?: string
 }
 
 export function Select<T>(props: SelectProps<T> & Omit<ButtonProps, "children">) {
@@ -40,7 +43,11 @@ export function Select<T>(props: SelectProps<T> & Omit<ButtonProps, "children">)
     "triggerStyle",
     "triggerVariant",
     "triggerProps",
+    "searchable",
+    "searchPlaceholder",
   ])
+
+  const [search, setSearch] = createSignal("")
 
   const state = {
     key: undefined as string | undefined,
@@ -71,11 +78,22 @@ export function Select<T>(props: SelectProps<T> & Omit<ButtonProps, "children">)
 
   onCleanup(stop)
 
+  const filtered = createMemo(() => {
+    const query = search().trim()
+    if (!local.searchable || !query) return local.options
+
+    const results = fuzzysort.go(query, local.options, {
+      key: (x) => (local.label ? local.label(x) : (x as string)),
+      threshold: -10000,
+    })
+
+    return results.map((r) => r.obj)
+  })
+
   const grouped = createMemo(() => {
     const result = pipe(
-      local.options,
+      filtered(),
       groupBy((x) => (local.groupBy ? local.groupBy(x) : "")),
-      // mapValues((x) => x.sort((a, b) => a.title.localeCompare(b.title))),
       entries(),
       map(([k, v]) => ({ category: k, options: v })),
     )
@@ -129,7 +147,10 @@ export function Select<T>(props: SelectProps<T> & Omit<ButtonProps, "children">)
       }}
       onOpenChange={(open) => {
         local.onOpenChange?.(open)
-        if (!open) stop()
+        if (!open) {
+          stop()
+          setSearch("")
+        }
       }}
     >
       <Kobalte.Trigger
@@ -166,6 +187,24 @@ export function Select<T>(props: SelectProps<T> & Omit<ButtonProps, "children">)
           data-component="select-content"
           data-trigger-style={local.triggerVariant}
         >
+          <Show when={local.searchable}>
+            <div class="px-2 pt-2 pb-1" data-slot="select-search-container">
+              <div class="relative flex items-center">
+                <div class="absolute left-2.5 text-text-weak">
+                  <Icon name="magnifying-glass" size="small" />
+                </div>
+                <input
+                  class="w-full bg-surface-raised-base border border-border-weak rounded-md py-1.5 pl-8 pr-2.5 text-12-regular text-text-strong placeholder:text-text-weak outline-none focus:border-border-base transition-colors"
+                  type="text"
+                  placeholder={local.searchPlaceholder || "Search..."}
+                  value={search()}
+                  onInput={(e) => setSearch(e.currentTarget.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  autofocus
+                />
+              </div>
+            </div>
+          </Show>
           <Kobalte.Listbox data-slot="select-select-content-list" />
         </Kobalte.Content>
       </Kobalte.Portal>

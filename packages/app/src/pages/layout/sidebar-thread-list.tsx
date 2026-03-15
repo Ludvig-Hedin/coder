@@ -1,4 +1,4 @@
-import { A } from "@solidjs/router"
+import { A, useLocation } from "@solidjs/router"
 import { Button } from "@opencode-ai/ui/button"
 import { DropdownMenu } from "@opencode-ai/ui/dropdown-menu"
 import { Icon } from "@opencode-ai/ui/icon"
@@ -155,12 +155,12 @@ const SessionRow = (props: {
       <div class="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover/thread:opacity-100 group-focus-within/thread:opacity-100">
         <DropdownMenu open={menuOpen()} onOpenChange={setMenuOpen}>
           <Tooltip value="Thread actions" placement="top">
-        <DropdownMenu.Trigger
-          as={IconButton}
-          icon="dot-grid"
-          variant="ghost"
-          class="size-6 rounded-md text-icon-weak"
-        />
+            <DropdownMenu.Trigger
+              as={IconButton}
+              icon="dot-grid"
+              variant="ghost"
+              class="size-6 rounded-md text-icon-weak"
+            />
           </Tooltip>
           <DropdownMenu.Portal>
             <DropdownMenu.Content class="mt-1 w-48 rounded-[18px] p-2">
@@ -281,35 +281,35 @@ const ProjectSection = (props: {
         </button>
         <DropdownMenu open={menuOpen()} onOpenChange={setMenuOpen}>
           <Tooltip value="Project actions" placement="top">
-        <DropdownMenu.Trigger
-          as={IconButton}
-          icon="dot-grid"
-          variant="ghost"
-          class="size-5 rounded-md text-icon-weak opacity-0 transition-opacity group-hover/project:opacity-100 group-focus-within/project:opacity-100"
-          aria-label="Project actions"
-        />
+            <DropdownMenu.Trigger
+              as={IconButton}
+              icon="dots"
+              variant="ghost"
+              class="size-5 rounded-md text-icon-weak opacity-0 transition-opacity group-hover/project:opacity-100 group-focus-within/project:opacity-100"
+              aria-label="Project actions"
+            />
           </Tooltip>
           <DropdownMenu.Portal>
             <DropdownMenu.Content class="mt-1 w-56 rounded-[18px] p-2">
-            <DropdownMenu.Item
-              class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
-              onSelect={() => {
-                setMenuOpen(false)
-                props.onEdit(props.project)
-              }}
-            >
+              <DropdownMenu.Item
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+                onSelect={() => {
+                  setMenuOpen(false)
+                  props.onEdit(props.project)
+                }}
+              >
                 <div class="flex size-5 shrink-0 items-center justify-center text-icon-weak">
                   <Icon name="pencil-line" size="small" />
                 </div>
                 <DropdownMenu.ItemLabel class="min-w-0 flex-1 text-14-medium">Edit name</DropdownMenu.ItemLabel>
               </DropdownMenu.Item>
-            <DropdownMenu.Item
-              class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
-              onSelect={() => {
-                setMenuOpen(false)
-                props.onRemove(props.project)
-              }}
-            >
+              <DropdownMenu.Item
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+                onSelect={() => {
+                  setMenuOpen(false)
+                  props.onRemove(props.project)
+                }}
+              >
                 <div class="flex size-5 shrink-0 items-center justify-center text-icon-critical-base">
                   <Icon name="trash" size="small" />
                 </div>
@@ -354,15 +354,20 @@ export const SidebarThreadList = (props: {
   onRemoveProject: (project: LocalProject) => void
   onArchive: (session: Session) => void
   onNew: () => void
+  onOpenAutomations: () => void
   onOpenProject: () => void
   onOpenSettings: () => void
+  onOpenSkills: () => void
   onEditThread: (session: Session) => void
   onRemoveThread: (session: Session) => void
 }): JSX.Element => {
   const language = useLanguage()
+  const location = useLocation()
   const [organize, setOrganize] = createSignal<"project" | "chronological">("project")
   const [order, setOrder] = createSignal<"updated" | "created">("updated")
   const [scope, setScope] = createSignal<"all" | "relevant">("all")
+  const automations = () => location.pathname.startsWith("/automations")
+  const skills = () => location.pathname.startsWith("/skills")
 
   const Item = (itemProps: {
     icon: "folder" | "bullet-list" | "plus-small" | "pencil-line" | "bubble-5" | "models"
@@ -394,20 +399,56 @@ export const SidebarThreadList = (props: {
       }}
     >
       <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-3 pb-3 pt-4">
-        <Button
-          variant="ghost"
-          class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
-          icon="new-session"
-          onClick={props.onNew}
-          style={{
-            "border-radius": row.radius,
-            "padding-left": row.padX,
-            "padding-right": row.padX,
-            "line-height": row.lineHeight.toString(),
-          }}
-        >
-          New thread
-        </Button>
+        <div class="flex flex-col gap-0">
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="new-session"
+            onClick={props.onNew}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            New thread
+          </Button>
+
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="checklist"
+            data-selected={automations()}
+            aria-current={automations() ? "page" : undefined}
+            onClick={props.onOpenAutomations}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            {language.t("automations.title")}
+          </Button>
+
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="models"
+            data-selected={skills()}
+            aria-current={skills() ? "page" : undefined}
+            onClick={props.onOpenSkills}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            Skills
+          </Button>
+        </div>
 
         <section class="flex flex-col gap-2">
           <div class="flex items-center justify-between px-5">
@@ -490,15 +531,15 @@ export const SidebarThreadList = (props: {
                   sessions={props.sessions}
                   expanded={props.expanded}
                   onSelect={props.onSelectProject}
-                onToggle={props.onToggleProject}
-                onNew={props.onNewProject}
-                onEdit={props.onEditProject}
-                onRemove={props.onRemoveProject}
-                onEditThread={props.onEditThread}
-                onRemoveThread={props.onRemoveThread}
-                onArchive={props.onArchive}
-              />
-            )}
+                  onToggle={props.onToggleProject}
+                  onNew={props.onNewProject}
+                  onEdit={props.onEditProject}
+                  onRemove={props.onRemoveProject}
+                  onEditThread={props.onEditThread}
+                  onRemoveThread={props.onRemoveThread}
+                  onArchive={props.onArchive}
+                />
+              )}
             </For>
           </div>
         </section>

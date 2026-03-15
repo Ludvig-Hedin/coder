@@ -63,3 +63,8 @@ GET /project/:projectID/agent?directory=<resolve path> -> Agent
 GET /project/:projectID/find/file?directory=<resolve path> -> File
 
 ```
+
+### picker notes
+
+- Folder rows in the project picker only change the current folder. A project is added or opened only when the modal `Open` action is used.
+- Sidebar project entries are matched using normalized paths so removal still works if a stored worktree had different slash or trailing-slash formatting.

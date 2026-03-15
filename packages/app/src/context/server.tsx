@@ -33,6 +33,14 @@ function isLocalHost(url: string) {
   if (host === "localhost" || host === "127.0.0.1") return "local"
 }
 
+function projectPath(input: string) {
+  const value = input.replaceAll("\\", "/").replace(/\/+/g, "/")
+  if (!value) return ""
+  if (value === "/") return value
+  if (/^[A-Za-z]:\/$/.test(value)) return value
+  return value.replace(/\/+$/, "")
+}
+
 export namespace ServerConnection {
   type Base = { displayName?: string }
 
@@ -240,39 +248,45 @@ export const { use: useServer, provider: ServerProvider } = createSimpleContext(
         open(directory: string) {
           const key = origin()
           if (!key) return
+          const next = projectPath(directory)
+          if (!next) return
           const current = store.projects[key] ?? []
-          if (current.find((x) => x.worktree === directory)) return
-          setStore("projects", key, [{ worktree: directory, expanded: true }, ...current])
+          if (current.find((x) => projectPath(x.worktree) === next)) return
+          setStore("projects", key, [{ worktree: next, expanded: true }, ...current])
         },
         close(directory: string) {
           const key = origin()
           if (!key) return
+          const next = projectPath(directory)
           const current = store.projects[key] ?? []
           setStore(
             "projects",
             key,
-            current.filter((x) => x.worktree !== directory),
+            current.filter((x) => projectPath(x.worktree) !== next),
           )
         },
         expand(directory: string) {
           const key = origin()
           if (!key) return
+          const next = projectPath(directory)
           const current = store.projects[key] ?? []
-          const index = current.findIndex((x) => x.worktree === directory)
+          const index = current.findIndex((x) => projectPath(x.worktree) === next)
           if (index !== -1) setStore("projects", key, index, "expanded", true)
         },
         collapse(directory: string) {
           const key = origin()
           if (!key) return
+          const next = projectPath(directory)
           const current = store.projects[key] ?? []
-          const index = current.findIndex((x) => x.worktree === directory)
+          const index = current.findIndex((x) => projectPath(x.worktree) === next)
           if (index !== -1) setStore("projects", key, index, "expanded", false)
         },
         move(directory: string, toIndex: number) {
           const key = origin()
           if (!key) return
+          const next = projectPath(directory)
           const current = store.projects[key] ?? []
-          const fromIndex = current.findIndex((x) => x.worktree === directory)
+          const fromIndex = current.findIndex((x) => projectPath(x.worktree) === next)
           if (fromIndex === -1 || fromIndex === toIndex) return
           const result = [...current]
           const [item] = result.splice(fromIndex, 1)
@@ -287,7 +301,7 @@ export const { use: useServer, provider: ServerProvider } = createSimpleContext(
         touch(directory: string) {
           const key = origin()
           if (!key) return
-          setStore("lastProject", key, directory)
+          setStore("lastProject", key, projectPath(directory))
         },
       },
     }

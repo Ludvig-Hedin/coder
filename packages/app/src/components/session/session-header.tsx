@@ -8,7 +8,7 @@ import { Spinner } from "@opencode-ai/ui/spinner"
 import { showToast } from "@opencode-ai/ui/toast"
 import { Tooltip, TooltipKeybind } from "@opencode-ai/ui/tooltip"
 import { getFilename } from "@opencode-ai/util/path"
-import { createEffect, createMemo, For, onCleanup, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, For, Show } from "solid-js"
 import { createStore } from "solid-js/store"
 import { Portal } from "solid-js/web"
 import { useCommand } from "@/context/command"
@@ -16,11 +16,11 @@ import { useLanguage } from "@/context/language"
 import { useLayout } from "@/context/layout"
 import { usePlatform } from "@/context/platform"
 import { useServer } from "@/context/server"
+import { useSDK } from "@/context/sdk"
 import { useSync } from "@/context/sync"
 import { useTerminal } from "@/context/terminal"
 import { focusTerminalById } from "@/pages/session/helpers"
 import { useSessionLayout } from "@/pages/session/session-layout"
-import { messageAgentColor } from "@/utils/agent"
 import { decode64 } from "@/utils/base64"
 import { Persist, persisted } from "@/utils/persist"
 import { StatusPopover } from "../status-popover"
@@ -136,6 +136,7 @@ export function SessionHeader() {
   const language = useLanguage()
   const sync = useSync()
   const terminal = useTerminal()
+  const sdk = useSDK()
   const { params, view } = useSessionLayout()
 
   const projectDirectory = createMemo(() => decode64(params.dir) ?? "")
@@ -151,6 +152,17 @@ export function SessionHeader() {
   })
   const hotkey = createMemo(() => command.keybind("file.open"))
   const os = createMemo(() => detectOS(platform))
+  const [gitConnecting, setGitConnecting] = createSignal(false)
+  const [gitJustConnected, setGitJustConnected] = createSignal(false)
+  const gitInfo = createMemo(() => sync.data.vcs)
+  const diffsForSession = createMemo(() => {
+    const id = params.id
+    if (!id) return []
+    return sync.data.session_diff[id] ?? []
+  })
+  const gitAvailable = createMemo(() => project()?.vcs === "git" || gitJustConnected())
+  const remoteConfigured = () => !!gitInfo()?.remote
+  const ghAvailable = () => !!gitInfo()?.gh
 
   const [exists, setExists] = createStore<Partial<Record<OpenApp, boolean>>>({
     finder: true,
@@ -167,6 +179,7 @@ export function SessionHeader() {
     if (os() === "windows") return { label: "session.header.open.fileExplorer", icon: "file-explorer" as const }
     return { label: "session.header.open.fileManager", icon: "finder" as const }
   })
+  const fileLabel = createMemo(() => language.t(fileManager().label))
 
   createEffect(() => {
     if (platform.platform !== "desktop") return
@@ -208,25 +221,23 @@ export function SessionHeader() {
   }
 
   const [prefs, setPrefs] = persisted(Persist.global("open.app"), createStore({ app: "finder" as OpenApp }))
-  const [menu, setMenu] = createStore({ open: false })
   const [openRequest, setOpenRequest] = createStore({
     app: undefined as OpenApp | undefined,
   })
 
   const canOpen = createMemo(() => platform.platform === "desktop" && !!platform.openPath && server.isLocal())
+  const editors = createMemo(() => options().filter((item) => item.id !== "finder"))
+  const hasEditors = createMemo(() => editors().length > 0)
   const current = createMemo(
     () =>
-      options().find((o) => o.id === prefs.app) ??
-      options()[0] ??
+      editors().find((o) => o.id === prefs.app) ??
+      editors()[0] ??
       ({ id: "finder", label: fileManager().label, icon: fileManager().icon } as const),
   )
   const opening = createMemo(() => openRequest.app !== undefined)
-  const tint = createMemo(() =>
-    messageAgentColor(params.id ? sync.data.message[params.id] : undefined, sync.data.agent),
-  )
 
   const selectApp = (app: OpenApp) => {
-    if (!options().some((item) => item.id === app)) return
+    if (!editors().some((item) => item.id === app)) return
     setPrefs("app", app)
   }
 
@@ -260,6 +271,43 @@ export function SessionHeader() {
         })
       })
       .catch((err: unknown) => showRequestError(language, err))
+  }
+
+  createEffect(() => {
+    if (project()?.vcs === "git") {
+      setGitJustConnected(false)
+    }
+  })
+
+  const initGit = async () => {
+    if (gitConnecting()) return
+    setGitConnecting(true)
+    try {
+      const result = await sdk.client.project.initGit()
+      if (result.data) {
+        setGitJustConnected(true)
+      }
+    } catch (err) {
+      showRequestError(language, err)
+    } finally {
+      setGitConnecting(false)
+    }
+  }
+
+  const openReviewPanel = () => {
+    view().reviewPanel.open()
+  }
+
+  const openTerminalPanel = () => {
+    view().terminal.open()
+  }
+
+  const openEditor = () => {
+    if (hasEditors()) {
+      openDir(current().id)
+      return
+    }
+    openDir("finder")
   }
 
   const centerMount = createMemo(() => document.getElementById("opencode-titlebar-center"))
@@ -303,120 +351,176 @@ export function SessionHeader() {
           <Portal mount={mount()}>
             <div class="flex items-center gap-2">
               <Show when={projectDirectory()}>
-                <div class="hidden xl:flex items-center">
+                <div class="flex items-center">
                   <Show
-                    when={canOpen()}
+                    when={gitAvailable()}
                     fallback={
-                      <div class="flex h-[24px] box-border items-center rounded-md border border-border-weak-base bg-surface-panel overflow-hidden">
-                        <Button
-                          variant="ghost"
-                          class="rounded-none h-full py-1 pr-4 pl-2 gap-1.5 border-none shadow-none h-[28px]"
-                          onClick={copyPath}
-                          aria-label={language.t("session.header.open.copyPath")}
+                      <Button
+                        variant="ghost"
+                        size="small"
+                        class="rounded-full h-8 gap-2 px-3"
+                        onClick={initGit}
+                        disabled={gitConnecting()}
+                      >
+                        <Show
+                          when={gitConnecting()}
+                          fallback={<Icon name="branch" size="small" class="text-icon-base" />}
                         >
-                          <Icon name="copy" size="small" class="text-icon-base" />
-                          <span class="text-12-regular text-text-strong">
-                            {language.t("session.header.open.copyPath")}
-                          </span>
-                        </Button>
-                      </div>
+                          <Spinner class="size-3" />
+                        </Show>
+                        <span class="text-12-medium text-text-strong">
+                          {language.t("session.header.git.connect")}
+                        </span>
+                      </Button>
                     }
                   >
-                    <div class="flex items-center">
-                      <div class="flex h-[24px] box-border items-center rounded-md border border-border-weak-base bg-surface-panel overflow-hidden">
-                        <Button
-                          variant="ghost"
-                          class="rounded-none h-full py-0 pr-1.5 pl-px gap-1.5 border-none shadow-none disabled:!cursor-default"
-                          classList={{
-                            "bg-surface-raised-base-active": opening(),
-                          }}
-                          onClick={() => openDir(current().id)}
-                          disabled={opening()}
-                          aria-label={language.t("session.header.open.ariaLabel", { app: current().label })}
+                    <DropdownMenu gutter={4} placement="bottom-end">
+                      <DropdownMenu.Trigger
+                        as={Button}
+                        variant="ghost"
+                        size="small"
+                        class="rounded-full h-8 gap-2 px-3"
+                      >
+                        <Icon name="branch" size="small" class="text-icon-base" />
+                        <span class="text-12-medium text-text-strong">
+                          {language.t("session.header.git.trigger")}
+                        </span>
+                        <Icon name="chevron-down" size="small" class="text-icon-weak" />
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                      <DropdownMenu.Content class="mt-1 min-w-[220px] w-56 rounded-[16px] border border-border-weak-base/70 bg-surface-panel/95 p-1 shadow-[0_8px_20px_rgba(0,0,0,0.55)]">
+                        <div class="px-3 pb-1 text-10-medium text-text-weak">
+                          {language.t("session.header.git.heading")}
+                        </div>
+                        <DropdownMenu.Item
+                          onSelect={openReviewPanel}
+                          disabled={diffsForSession().length === 0}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
                         >
-                          <div class="flex size-5 shrink-0 items-center justify-center [&_[data-component=app-icon]]:size-5">
-                            <Show when={opening()} fallback={<AppIcon id={current().icon} />}>
-                              <Spinner class="size-3.5" style={{ color: tint() ?? "var(--icon-base)" }} />
-                            </Show>
+                          <div class="flex items-center gap-3">
+                            <Icon name="branch" size="small" class="text-icon-strong" />
+                            <DropdownMenu.ItemLabel>
+                              {language.t("session.header.git.commit")}
+                            </DropdownMenu.ItemLabel>
                           </div>
-                          <span class="text-12-regular text-text-strong">{language.t("common.open")}</span>
-                        </Button>
-                        <DropdownMenu
-                          gutter={4}
-                          placement="bottom-end"
-                          open={menu.open}
-                          onOpenChange={(open) => setMenu("open", open)}
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          onSelect={openTerminalPanel}
+                          disabled={!remoteConfigured()}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
                         >
-                          <DropdownMenu.Trigger
-                            as={IconButton}
-                            icon="chevron-down"
-                            variant="ghost"
-                            disabled={opening()}
-                            class="rounded-none h-full w-[20px] p-0 border-none shadow-none data-[expanded]:bg-surface-raised-base-active disabled:!cursor-default"
-                            classList={{
-                              "bg-surface-raised-base-active": opening(),
-                            }}
-                            aria-label={language.t("session.header.open.menu")}
-                          />
-                          <DropdownMenu.Portal>
-                            <DropdownMenu.Content class="[&_[data-slot=dropdown-menu-item]]:pl-1 [&_[data-slot=dropdown-menu-radio-item]]:pl-1 [&_[data-slot=dropdown-menu-radio-item]+[data-slot=dropdown-menu-radio-item]]:mt-1">
-                              <DropdownMenu.Group>
-                                <DropdownMenu.GroupLabel class="!px-1 !py-1">
-                                  {language.t("session.header.openIn")}
-                                </DropdownMenu.GroupLabel>
-                                <DropdownMenu.RadioGroup
-                                  class="mt-1"
-                                  value={current().id}
-                                  onChange={(value) => {
-                                    if (!OPEN_APPS.includes(value as OpenApp)) return
-                                    selectApp(value as OpenApp)
+                          <div class="flex items-center gap-3">
+                            <Icon name="arrow-up" size="small" class="text-icon-strong" />
+                            <DropdownMenu.ItemLabel>
+                              {language.t("session.header.git.push")}
+                            </DropdownMenu.ItemLabel>
+                          </div>
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          onSelect={openTerminalPanel}
+                          disabled={!ghAvailable()}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
+                        >
+                          <div class="flex flex-col gap-1">
+                            <div class="flex items-center gap-3">
+                              <Icon name="github" size="small" class="text-icon-strong" />
+                              <DropdownMenu.ItemLabel>
+                                {language.t("session.header.git.createPr")}
+                              </DropdownMenu.ItemLabel>
+                            </div>
+                            <DropdownMenu.ItemDescription class="text-10-regular text-text-weak">
+                              {language.t("session.header.git.createPrHint")}
+                            </DropdownMenu.ItemDescription>
+                          </div>
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu>
+                </Show>
+              </div>
+            </Show>
+            <div class="flex items-center gap-1">
+                <Show when={projectDirectory() && canOpen()}>
+                  <div class="hidden md:flex items-center gap-1 shrink-0">
+                    <Tooltip
+                      placement="bottom"
+                      value={
+                        hasEditors()
+                          ? language.t("session.header.open.ariaLabel", { app: current().label })
+                          : language.t("session.header.open.action", { app: fileLabel() })
+                      }
+                    >
+                      <Button
+                        variant="ghost"
+                        size="small"
+                        class="rounded-full h-8 gap-2 px-3"
+                        onClick={openEditor}
+                        disabled={opening()}
+                        aria-label={
+                          hasEditors()
+                            ? language.t("session.header.open.ariaLabel", { app: current().label })
+                            : language.t("session.header.open.action", { app: fileLabel() })
+                        }
+                      >
+                        <Show
+                          when={opening()}
+                          fallback={
+                            <>
+                              <AppIcon id={hasEditors() ? current().icon : fileManager().icon} class="size-4" />
+                              <span class="text-12-medium text-text-strong">
+                                {language.t("session.header.openIn")} {hasEditors() ? current().label : fileLabel()}
+                              </span>
+                            </>
+                          }
+                        >
+                          <Spinner class="size-3" />
+                        </Show>
+                      </Button>
+                    </Tooltip>
+                    <Show when={hasEditors()}>
+                      <DropdownMenu gutter={4} placement="bottom-end">
+                        <DropdownMenu.Trigger
+                          as={Button}
+                          variant="ghost"
+                          size="small"
+                          class="rounded-full h-8 w-8 p-0"
+                          aria-label={language.t("session.header.open.menu")}
+                        >
+                          <Icon name="chevron-down" size="small" class="text-icon-weak" />
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Portal>
+                          <DropdownMenu.Content class="mt-1 w-64 rounded-[18px] border border-border-weak-base bg-surface-panel p-2">
+                            <div class="px-2 pb-1 text-10-medium uppercase text-text-weak">
+                              {language.t("session.header.openIn")}
+                            </div>
+                            <For each={editors()}>
+                              {(item) => (
+                                <DropdownMenu.Item
+                                  onSelect={() => {
+                                    selectApp(item.id)
+                                    openDir(item.id)
                                   }}
                                 >
-                                  <For each={options()}>
-                                    {(o) => (
-                                      <DropdownMenu.RadioItem
-                                        value={o.id}
-                                        disabled={opening()}
-                                        onSelect={() => {
-                                          setMenu("open", false)
-                                          openDir(o.id)
-                                        }}
-                                      >
-                                        <div class="flex size-5 shrink-0 items-center justify-center [&_[data-component=app-icon]]:size-5">
-                                          <AppIcon id={o.icon} />
-                                        </div>
-                                        <DropdownMenu.ItemLabel>{o.label}</DropdownMenu.ItemLabel>
-                                        <DropdownMenu.ItemIndicator>
-                                          <Icon name="check-small" size="small" class="text-icon-weak" />
-                                        </DropdownMenu.ItemIndicator>
-                                      </DropdownMenu.RadioItem>
-                                    )}
-                                  </For>
-                                </DropdownMenu.RadioGroup>
-                              </DropdownMenu.Group>
-                              <DropdownMenu.Separator />
-                              <DropdownMenu.Item
-                                onSelect={() => {
-                                  setMenu("open", false)
-                                  copyPath()
-                                }}
-                              >
-                                <div class="flex size-5 shrink-0 items-center justify-center">
-                                  <Icon name="copy" size="small" class="text-icon-weak" />
-                                </div>
-                                <DropdownMenu.ItemLabel>
-                                  {language.t("session.header.open.copyPath")}
-                                </DropdownMenu.ItemLabel>
-                              </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                          </DropdownMenu.Portal>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  </Show>
-                </div>
-              </Show>
-              <div class="flex items-center gap-1">
+                                  <div class="flex items-center gap-2 px-2 py-1">
+                                    <AppIcon id={item.icon} class="size-4" />
+                                    <DropdownMenu.ItemLabel>{item.label}</DropdownMenu.ItemLabel>
+                                  </div>
+                                </DropdownMenu.Item>
+                              )}
+                            </For>
+                            <DropdownMenu.Separator class="my-1 h-px bg-border-weak-base" />
+                            <DropdownMenu.Item onSelect={copyPath}>
+                              <div class="flex items-center gap-2 px-2 py-1">
+                                <Icon name="copy" size="small" />
+                                <DropdownMenu.ItemLabel>{language.t("session.header.open.copyPath")}</DropdownMenu.ItemLabel>
+                              </div>
+                            </DropdownMenu.Item>
+                          </DropdownMenu.Content>
+                        </DropdownMenu.Portal>
+                      </DropdownMenu>
+                    </Show>
+                  </div>
+                </Show>
                 <Tooltip placement="bottom" value={language.t("status.popover.trigger")}>
                   <StatusPopover />
                 </Tooltip>

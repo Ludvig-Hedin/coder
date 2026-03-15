@@ -47,6 +47,8 @@ import { ErrorPage } from "./pages/error"
 import { useCheckServerHealth } from "./utils/server-health"
 
 const Home = lazy(() => import("@/pages/home"))
+const Automations = lazy(() => import("@/pages/automations"))
+const Skills = lazy(() => import("@/pages/skills"))
 const Session = lazy(() => import("@/pages/session"))
 const Loading = () => <div class="size-full" />
 
@@ -62,6 +64,18 @@ const SessionRoute = () => (
       <Session />
     </Suspense>
   </SessionProviders>
+)
+
+const AutomationsRoute = () => (
+  <Suspense fallback={<Loading />}>
+    <Automations />
+  </Suspense>
+)
+
+const SkillsRoute = () => (
+  <Suspense fallback={<Loading />}>
+    <Skills />
+  </Suspense>
 )
 
 const SessionIndexRoute = () => <Navigate href="session" />
@@ -282,6 +296,8 @@ export function AppInterface(props: {
               root={(routerProps) => <RouterRoot appChildren={props.children}>{routerProps.children}</RouterRoot>}
             >
               <Route path="/" component={HomeRoute} />
+              <Route path="/automations" component={AutomationsRoute} />
+              <Route path="/skills" component={SkillsRoute} />
               <Route path="/:dir" component={DirectoryLayout}>
                 <Route path="/" component={SessionIndexRoute} />
                 <Route path="/session/:id?" component={SessionRoute} />
