@@ -388,32 +388,42 @@ export function SessionHeader() {
                         <Icon name="chevron-down" size="small" class="text-icon-weak" />
                       </DropdownMenu.Trigger>
                       <DropdownMenu.Portal>
-                        <DropdownMenu.Content class="mt-1 w-56 rounded-[18px] border border-border-weak-base bg-surface-panel p-2">
-                          <div class="px-2 pb-1 text-10-medium uppercase text-text-weak">
-                            {language.t("session.header.git.heading")}
+                      <DropdownMenu.Content class="mt-1 min-w-[220px] w-56 rounded-[16px] border border-border-weak-base/70 bg-surface-panel/95 p-1 shadow-[0_8px_20px_rgba(0,0,0,0.55)]">
+                        <div class="px-3 pb-1 text-10-medium text-text-weak">
+                          {language.t("session.header.git.heading")}
+                        </div>
+                        <DropdownMenu.Item
+                          onSelect={openReviewPanel}
+                          disabled={diffsForSession().length === 0}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
+                        >
+                          <div class="flex items-center gap-3">
+                            <Icon name="branch" size="small" class="text-icon-strong" />
+                            <DropdownMenu.ItemLabel>
+                              {language.t("session.header.git.commit")}
+                            </DropdownMenu.ItemLabel>
                           </div>
-                          <DropdownMenu.Item
-                            onSelect={openReviewPanel}
-                            disabled={diffsForSession().length === 0}
-                          >
-                            <div class="flex items-center gap-2 px-2 py-1">
-                              <Icon name="branch" size="small" />
-                              <DropdownMenu.ItemLabel>
-                                {language.t("session.header.git.commit")}
-                              </DropdownMenu.ItemLabel>
-                            </div>
-                          </DropdownMenu.Item>
-                          <DropdownMenu.Item onSelect={openTerminalPanel} disabled={!remoteConfigured()}>
-                            <div class="flex items-center gap-2 px-2 py-1">
-                              <Icon name="arrow-up" size="small" />
-                              <DropdownMenu.ItemLabel>
-                                {language.t("session.header.git.push")}
-                              </DropdownMenu.ItemLabel>
-                            </div>
-                          </DropdownMenu.Item>
-                          <DropdownMenu.Item onSelect={openTerminalPanel} disabled={!ghAvailable()}>
-                            <div class="flex items-center gap-2 px-2 py-1">
-                              <Icon name="github" size="small" />
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          onSelect={openTerminalPanel}
+                          disabled={!remoteConfigured()}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
+                        >
+                          <div class="flex items-center gap-3">
+                            <Icon name="arrow-up" size="small" class="text-icon-strong" />
+                            <DropdownMenu.ItemLabel>
+                              {language.t("session.header.git.push")}
+                            </DropdownMenu.ItemLabel>
+                          </div>
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                          onSelect={openTerminalPanel}
+                          disabled={!ghAvailable()}
+                          class="rounded-[12px] px-3 py-2 text-12-medium text-text-strong transition-colors hover:bg-surface-hover"
+                        >
+                          <div class="flex flex-col gap-1">
+                            <div class="flex items-center gap-3">
+                              <Icon name="github" size="small" class="text-icon-strong" />
                               <DropdownMenu.ItemLabel>
                                 {language.t("session.header.git.createPr")}
                               </DropdownMenu.ItemLabel>
@@ -421,14 +431,15 @@ export function SessionHeader() {
                             <DropdownMenu.ItemDescription class="text-10-regular text-text-weak">
                               {language.t("session.header.git.createPrHint")}
                             </DropdownMenu.ItemDescription>
-                          </DropdownMenu.Item>
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Portal>
-                    </DropdownMenu>
-                  </Show>
-                </div>
-              </Show>
-              <div class="flex items-center gap-1">
+                          </div>
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu>
+                </Show>
+              </div>
+            </Show>
+            <div class="flex items-center gap-1">
                 <Show when={projectDirectory() && canOpen()}>
                   <div class="hidden md:flex items-center gap-1 shrink-0">
                     <Tooltip
