@@ -31,7 +31,7 @@ import { ModelSelectorPopover } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaid } from "@/components/dialog-select-model-unpaid"
 import { SessionContextUsage } from "@/components/session-context-usage"
 import { useProviders } from "@/hooks/use-providers"
-import { useCommand } from "@/context/command"
+import { formatKeybind, useCommand } from "@/context/command"
 import { Persist, persisted } from "@/utils/persist"
 import { usePermission } from "@/context/permission"
 import { useLanguage } from "@/context/language"
@@ -268,6 +268,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     mode: "normal",
     applyingHistory: false,
   })
+  const queued = createMemo(() => store.mode === "normal" && !!props.shouldQueue?.())
 
   const buttonsSpring = useSpring(() => (store.mode === "normal" ? 1 : 0), { visualDuration: 0.2, bounce: 0 })
   const motion = (value: number) => {
@@ -1106,6 +1107,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     onSubmit: props.onSubmit,
   })
 
+  const sendKeybind = createMemo(() => formatKeybind("mod+enter", language.t))
+  const queueKeybind = createMemo(() => formatKeybind("enter", language.t))
+
   const handleKeyDown = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "u") {
       event.preventDefault()
@@ -1263,7 +1267,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
     // Note: Shift+Enter is handled earlier, before IME check
     if (event.key === "Enter" && !event.shiftKey) {
-      handleSubmit(event)
+      const force = event.metaKey || event.ctrlKey || !queued()
+      handleSubmit(event, { force })
     }
   }
 
@@ -1285,7 +1290,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         t={(key) => language.t(key as Parameters<typeof language.t>[0])}
       />
       <DockShellForm
-        onSubmit={handleSubmit}
+        onSubmit={(event) => handleSubmit(event, { force: true })}
         style={{ overflow: "visible" }}
         classList={{
           "group/prompt-input": true,
@@ -1424,10 +1429,26 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       </div>
                     </Match>
                     <Match when={true}>
-                      <div class="flex items-center gap-2">
-                        <span>{language.t("prompt.action.send")}</span>
-                        <Icon name="enter" size="small" class="text-icon-base" />
-                      </div>
+                      <Show
+                        when={queued()}
+                        fallback={
+                          <div class="flex items-center gap-2">
+                            <span>{language.t("prompt.action.send")}</span>
+                            <span class="text-icon-base text-12-medium text-[10px]!">{queueKeybind()}</span>
+                          </div>
+                        }
+                      >
+                        <div class="flex flex-col gap-1">
+                          <div data-slot="tooltip-keybind">
+                            <span>{language.t("prompt.action.send")}</span>
+                            <span data-slot="tooltip-keybind-key">{sendKeybind()}</span>
+                          </div>
+                          <div data-slot="tooltip-keybind">
+                            <span>{language.t("settings.general.row.followup.option.queue")}</span>
+                            <span data-slot="tooltip-keybind-key">{queueKeybind()}</span>
+                          </div>
+                        </div>
+                      </Show>
                     </Match>
                   </Switch>
                 }
