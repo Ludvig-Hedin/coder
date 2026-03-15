@@ -1175,7 +1175,7 @@ export default function Layout(props: ParentProps) {
   }
 
   function openSkills() {
-    dialog.show(() => <DialogSettings tab="skills" />)
+    navigate("/skills")
   }
 
   function projectRoot(directory: string) {

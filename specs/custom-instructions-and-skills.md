@@ -6,13 +6,18 @@
 - Added preset controls for quickly generating instruction starters.
 - Added a settings UI for viewing discovered skills and saving managed global skills.
 - Added built-in skill templates in the settings UI for beautiful design, UX assessment, code review, and git branch strategy workflows.
-- Added project-local skills for safe file-splitting refactors and git branch/versioning analysis.
+- Added project-local skills for safe file-splitting refactors, git branch/versioning analysis, frontend design, browser automation, remote browser automation, and code simplification.
+- Added a dedicated `/skills` page for skill browsing and management, separate from Settings.
+- Added managed-skill deletion support so installed copies can be removed from the UI.
 - Added server endpoints for reading and writing the global `AGENTS.md` file and managed `SKILL.md` files.
 
 ## User-facing behavior
 
 - Settings now includes a `Custom instructions` tab.
 - Settings now includes a `Skills` tab.
+- The sidebar `Skills` link opens the dedicated Skills page.
+- Settings `Skills` is now configuration-focused rather than a duplicate skill library.
+- The dedicated Skills page shows built-in templates and discovered skills as cards, opens a detail modal on click, and exposes inline add/remove actions without forcing the modal open.
 - Built-in skill templates are shown as category cards with clearer preview copy.
 - Managed skills are written to `~/.config/opencode/skills/<name>/SKILL.md`.
 - Global custom instructions are written to `~/.config/opencode/AGENTS.md`.

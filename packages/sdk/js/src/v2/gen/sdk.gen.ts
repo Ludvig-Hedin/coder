@@ -5,6 +5,8 @@ import { buildClientParams, type Client, type Options as Options2, type TDataSha
 import type {
   AgentPartInput,
   AppAgentsResponses,
+  AppDeleteSkillErrors,
+  AppDeleteSkillResponses,
   AppInstructionsResponses,
   AppLogErrors,
   AppLogResponses,
@@ -3880,6 +3882,38 @@ export class App extends HeyApiClient {
         ...options?.headers,
         ...params.headers,
       },
+    })
+  }
+
+  /**
+   * Delete managed skill
+   *
+   * Delete a managed global skill from the OpenCode config directory.
+   */
+  public deleteSkill<ThrowOnError extends boolean = false>(
+    parameters: {
+      name: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "name" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).delete<AppDeleteSkillResponses, AppDeleteSkillErrors, ThrowOnError>({
+      url: "/skill/{name}",
+      ...options,
+      ...params,
     })
   }
 

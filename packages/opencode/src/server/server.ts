@@ -517,6 +517,35 @@ export namespace Server {
           return c.json(skill)
         },
       )
+      .delete(
+        "/skill/:name",
+        describeRoute({
+          summary: "Delete managed skill",
+          description: "Delete a managed global skill from the OpenCode config directory.",
+          operationId: "app.deleteSkill",
+          responses: {
+            204: {
+              description: "Skill deleted",
+            },
+            ...errors(400),
+          },
+        }),
+        async (c) => {
+          await Skill.remove(c.req.param("name"))
+          void Instance.disposeAll()
+            .catch(() => undefined)
+            .finally(() => {
+              GlobalBus.emit("event", {
+                directory: "global",
+                payload: {
+                  type: Event.Disposed.type,
+                  properties: {},
+                },
+              })
+            })
+          return c.body(null, 204)
+        },
+      )
       .get(
         "/instruction",
         describeRoute({

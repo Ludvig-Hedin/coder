@@ -1,6 +1,7 @@
 import z from "zod"
 import path from "path"
 import os from "os"
+import { rm } from "fs/promises"
 import { Config } from "../config/config"
 import { Instance } from "../project/instance"
 import { NamedError } from "@opencode-ai/util/error"
@@ -231,6 +232,12 @@ export namespace Skill {
       location: filepath,
       content: skill.content.trim(),
     }
+  }
+
+  export async function remove(name: string) {
+    Draft.shape.name.parse(name)
+    const filepath = managedPath(name)
+    await rm(path.dirname(filepath), { recursive: true, force: true })
   }
 
   export async function available(agent?: Agent.Info) {

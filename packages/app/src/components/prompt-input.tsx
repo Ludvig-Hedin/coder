@@ -37,6 +37,7 @@ import { Persist, persisted } from "@/utils/persist"
 import { usePermission } from "@/context/permission"
 import { useLanguage } from "@/context/language"
 import { usePlatform } from "@/context/platform"
+import { useSettings } from "@/context/settings"
 import { useSessionLayout } from "@/pages/session/session-layout"
 import { createSessionTabs } from "@/pages/session/helpers"
 import { createTextFragment, getCursorPosition, setCursorPosition, setRangeEdge } from "./prompt-input/editor-dom"
@@ -121,6 +122,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const permission = usePermission()
   const language = useLanguage()
   const platform = usePlatform()
+  const settings = useSettings()
   const { params, tabs, view } = useSessionLayout()
   let editorRef!: HTMLDivElement
   let fileInputRef: HTMLInputElement | undefined
@@ -615,15 +617,28 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         type: "builtin" as const,
       }))
 
-    const custom = sync.data.command.map((cmd) => ({
-      id: `custom.${cmd.name}`,
-      trigger: cmd.name,
-      title: cmd.name,
-      description: cmd.description,
-      type: "custom" as const,
-      source: cmd.source,
-    }))
+    const custom = sync.data.command
+      .filter((cmd) => settings.skills.slash() || cmd.source !== "skill")
+      .map((cmd) => ({
+        id: `custom.${cmd.name}`,
+        trigger: cmd.name,
+        title: cmd.name,
+        description: cmd.description,
+        type: "custom" as const,
+        source: cmd.source,
+      }))
 
+    const mode = settings.skills.ranking()
+    if (mode === "skills-first") {
+      return [
+        ...custom.filter((item) => item.source === "skill"),
+        ...builtin,
+        ...custom.filter((item) => item.source !== "skill"),
+      ]
+    }
+    if (mode === "commands-first") {
+      return [...builtin, ...custom]
+    }
     return [...custom, ...builtin]
   })
 
@@ -637,7 +652,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     if (!cmd) return
     closePopover()
 
-    if (cmd.type === "custom" && cmd.source === "skill") {
+    if (cmd.type === "custom" && cmd.source === "skill" && settings.skills.pills()) {
       addPart({
         type: "skill",
         name: cmd.trigger,
@@ -949,7 +964,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
     const shellMode = store.mode === "shell"
 
-    if (!shellMode) {
+    if (!shellMode && settings.skills.pills() && settings.skills.autoConvert()) {
       const first = rawParts[0]
       const match = first?.type === "text" ? first.content.match(/^\/([a-z0-9-]+)(?=\s|$)/) : null
       const cmd = match?.[1] ? slashCommand().get(match[1]) : undefined

@@ -367,6 +367,7 @@ export const SidebarThreadList = (props: {
   const [order, setOrder] = createSignal<"updated" | "created">("updated")
   const [scope, setScope] = createSignal<"all" | "relevant">("all")
   const automations = () => location.pathname.startsWith("/automations")
+  const skills = () => location.pathname.startsWith("/skills")
 
   const Item = (itemProps: {
     icon: "folder" | "bullet-list" | "plus-small" | "pencil-line" | "bubble-5" | "models"
@@ -398,52 +399,56 @@ export const SidebarThreadList = (props: {
       }}
     >
       <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-3 pb-3 pt-4">
-        <Button
-          variant="ghost"
-          class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
-          icon="new-session"
-          onClick={props.onNew}
-          style={{
-            "border-radius": row.radius,
-            "padding-left": row.padX,
-            "padding-right": row.padX,
-            "line-height": row.lineHeight.toString(),
-          }}
-        >
-          New thread
-        </Button>
+        <div class="flex flex-col gap-0">
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="new-session"
+            onClick={props.onNew}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            New thread
+          </Button>
 
-        <Button
-          variant="ghost"
-          class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
-          icon="checklist"
-          data-selected={automations()}
-          aria-current={automations() ? "page" : undefined}
-          onClick={props.onOpenAutomations}
-          style={{
-            "border-radius": row.radius,
-            "padding-left": row.padX,
-            "padding-right": row.padX,
-            "line-height": row.lineHeight.toString(),
-          }}
-        >
-          {language.t("automations.title")}
-        </Button>
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="checklist"
+            data-selected={automations()}
+            aria-current={automations() ? "page" : undefined}
+            onClick={props.onOpenAutomations}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            {language.t("automations.title")}
+          </Button>
 
-        <Button
-          variant="ghost"
-          class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
-          icon="models"
-          onClick={props.onOpenSkills}
-          style={{
-            "border-radius": row.radius,
-            "padding-left": row.padX,
-            "padding-right": row.padX,
-            "line-height": row.lineHeight.toString(),
-          }}
-        >
-          Skills
-        </Button>
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="models"
+            data-selected={skills()}
+            aria-current={skills() ? "page" : undefined}
+            onClick={props.onOpenSkills}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            Skills
+          </Button>
+        </div>
 
         <section class="flex flex-col gap-2">
           <div class="flex items-center justify-between px-5">

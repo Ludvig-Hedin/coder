@@ -4966,6 +4966,36 @@ export type AppSaveSkillResponses = {
 
 export type AppSaveSkillResponse = AppSaveSkillResponses[keyof AppSaveSkillResponses]
 
+export type AppDeleteSkillData = {
+  body?: never
+  path: {
+    name: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/skill/{name}"
+}
+
+export type AppDeleteSkillErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type AppDeleteSkillError = AppDeleteSkillErrors[keyof AppDeleteSkillErrors]
+
+export type AppDeleteSkillResponses = {
+  /**
+   * Skill deleted
+   */
+  204: void
+}
+
+export type AppDeleteSkillResponse = AppDeleteSkillResponses[keyof AppDeleteSkillResponses]
+
 export type AppInstructionsData = {
   body?: never
   path?: never

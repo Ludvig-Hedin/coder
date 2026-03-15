@@ -40,6 +40,12 @@ export interface Settings {
   }
   notifications: NotificationSettings
   sounds: SoundSettings
+  skills: {
+    slash: boolean
+    pills: boolean
+    autoConvert: boolean
+    ranking: "balanced" | "skills-first" | "commands-first"
+  }
 }
 
 const defaultSettings: Settings = {
@@ -75,6 +81,12 @@ const defaultSettings: Settings = {
     errorsEnabled: true,
     errors: "nope-03",
   },
+  skills: {
+    slash: true,
+    pills: true,
+    autoConvert: true,
+    ranking: "balanced",
+  },
 }
 
 const monoFallback =
@@ -107,7 +119,7 @@ function withFallback<T>(read: () => T | undefined, fallback: T) {
 export const { use: useSettings, provider: SettingsProvider } = createSimpleContext({
   name: "Settings",
   init: () => {
-    const [store, setStore, _, ready] = persisted("settings.v3", createStore<Settings>(defaultSettings))
+    const [store, setStore, _, ready] = persisted("settings.v4", createStore<Settings>(defaultSettings))
 
     createEffect(() => {
       if (typeof document === "undefined") return
@@ -234,6 +246,24 @@ export const { use: useSettings, provider: SettingsProvider } = createSimpleCont
         errors: withFallback(() => store.sounds?.errors, defaultSettings.sounds.errors),
         setErrors(value: string) {
           setStore("sounds", "errors", value)
+        },
+      },
+      skills: {
+        slash: withFallback(() => store.skills?.slash, defaultSettings.skills.slash),
+        setSlash(value: boolean) {
+          setStore("skills", "slash", value)
+        },
+        pills: withFallback(() => store.skills?.pills, defaultSettings.skills.pills),
+        setPills(value: boolean) {
+          setStore("skills", "pills", value)
+        },
+        autoConvert: withFallback(() => store.skills?.autoConvert, defaultSettings.skills.autoConvert),
+        setAutoConvert(value: boolean) {
+          setStore("skills", "autoConvert", value)
+        },
+        ranking: withFallback(() => store.skills?.ranking, defaultSettings.skills.ranking),
+        setRanking(value: "balanced" | "skills-first" | "commands-first") {
+          setStore("skills", "ranking", value)
         },
       },
     }
