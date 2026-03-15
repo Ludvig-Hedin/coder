@@ -52,6 +52,28 @@ globalThis.AI_SDK_LOG_WARNINGS = false
 export namespace Server {
   const log = Log.create({ service: "server" })
 
+  export function origin(input: string | undefined, extra?: string[]) {
+    if (!input) return undefined
+
+    if (input.startsWith("http://localhost:")) return input
+    if (input.startsWith("http://127.0.0.1:")) return input
+    if (
+      input === "tauri://localhost" ||
+      input === "http://tauri.localhost" ||
+      input === "https://tauri.localhost"
+    )
+      return input
+
+    if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) {
+      return input
+    }
+    if (extra?.includes(input)) {
+      return input
+    }
+
+    return undefined
+  }
+
   export const Default = lazy(() => createApp({}))
 
   export const createApp = (opts: { cors?: string[] }): Hono => {
@@ -104,26 +126,7 @@ export namespace Server {
       .use(
         cors({
           origin(input) {
-            if (!input) return
-
-            if (input.startsWith("http://localhost:")) return input
-            if (input.startsWith("http://127.0.0.1:")) return input
-            if (
-              input === "tauri://localhost" ||
-              input === "http://tauri.localhost" ||
-              input === "https://tauri.localhost"
-            )
-              return input
-
-            // *.opencode.ai (https only, adjust if needed)
-            if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) {
-              return input
-            }
-            if (opts?.cors?.includes(input)) {
-              return input
-            }
-
-            return
+            return Server.origin(input, opts?.cors)
           },
         }),
       )
