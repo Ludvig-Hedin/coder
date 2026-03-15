@@ -15,6 +15,8 @@ import { useGlobalSDK } from "@/context/global-sdk"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLayout } from "@/context/layout"
 import { useLanguage } from "@/context/language"
+import { usePlatform } from "@/context/platform"
+import { useServer } from "@/context/server"
 
 interface DialogSelectDirectoryProps {
   title?: string
@@ -275,6 +277,8 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   const layout = useLayout()
   const dialog = useDialog()
   const language = useLanguage()
+  const platform = usePlatform()
+  const server = useServer()
 
   const [filter, setFilter] = createSignal("")
   const [tick, setTick] = createSignal(0)
@@ -317,6 +321,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   })
   const title = createMemo(() => props.title ?? language.t("command.project.open"))
   const currentLabel = createMemo(() => displayPath(current(), "", home()))
+  const canPickNative = createMemo(() => !!platform.openDirectoryPickerDialog && server.isLocal())
 
   const recentProjects = createMemo(() => {
     const projects = layout.projects.list()
@@ -381,6 +386,17 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
     dialog.close()
   }
 
+  async function pick() {
+    if (!canPickNative()) return
+    const result = await platform.openDirectoryPickerDialog?.({
+      title: title(),
+      multiple: props.multiple,
+    })
+    if (!result) return
+    props.onSelect(result)
+    dialog.close()
+  }
+
   async function mkdir() {
     const name = cleanInput(store.name)
     if (!name) return
@@ -426,6 +442,11 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
       }
       action={
         <div class="flex items-center gap-2">
+          <Show when={canPickNative()}>
+            <Button type="button" variant="ghost" size="normal" icon="folder-add-left" onClick={() => void pick()}>
+              File explorer
+            </Button>
+          </Show>
           <Button
             type="button"
             variant="ghost"
