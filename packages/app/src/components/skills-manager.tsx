@@ -514,9 +514,9 @@ export const SkillsManager: Component = () => {
         <section class="flex flex-col gap-3">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <h3 class="text-14-medium text-text-strong">Explore skills</h3>
+              <h3 class="text-14-medium text-text-strong">All skills</h3>
               <p class="pt-1 text-12-regular text-text-weak">
-                Browse skills that enhance your agent's capabilities.
+                Browse built-in templates and discovered skills from every configured source.
               </p>
             </div>
           </div>
