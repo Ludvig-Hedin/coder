@@ -264,6 +264,11 @@ textarea,
   opacity: 1; /* 4 */
 }
 
+:where(input, textarea, select):focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 /*
   Restore default font weight.
 */
