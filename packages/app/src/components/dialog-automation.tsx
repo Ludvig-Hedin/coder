@@ -145,7 +145,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
               <Icon name="brain" size="small" />
             </Button>
             <Button type="button" variant="ghost" size="large" class="automation-dialog__chip">
-              <Icon name="dots" size="small" />
+              <Icon name="dot-grid" size="small" />
             </Button>
           </div>
 

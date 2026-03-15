@@ -122,6 +122,8 @@ export function SessionFollowupDock(props: {
   onDelete: (id: string) => void
   onMove: (id: string, to: number) => void
   onEdit: (id: string) => void
+  onRemove?: (id: string) => void
+  onDisableQueue?: () => void
 }) {
   const language = useLanguage()
   const [active, setActive] = createSignal<Item>()

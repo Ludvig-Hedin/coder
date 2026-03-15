@@ -34,9 +34,8 @@ export function SessionComposerRegion(props: {
     onDelete: (id: string) => void
     onMove: (id: string, to: number) => void
     onEdit: (id: string) => void
-    onRemove: (id: string) => void
-    onMove: (from: string, to: string) => void
-    onDisableQueue: () => void
+    onRemove?: (id: string) => void
+    onDisableQueue?: () => void
     onEditLoaded: () => void
   }
   revert?: {
@@ -233,17 +232,16 @@ export function SessionComposerRegion(props: {
               }}
             >
               <Show when={props.followup?.items.length}>
-                <SessionFollowupDock
-                  items={props.followup!.items}
-                  sending={props.followup!.sending}
-                  onSend={props.followup!.onSend}
-                  onDelete={props.followup!.onDelete}
-                  onMove={props.followup!.onMove}
-                  onEdit={props.followup!.onEdit}
-                  onRemove={props.followup!.onRemove}
-                  onMove={props.followup!.onMove}
-                  onDisableQueue={props.followup!.onDisableQueue}
-                />
+              <SessionFollowupDock
+                items={props.followup!.items}
+                sending={props.followup!.sending}
+                onSend={props.followup!.onSend}
+                onDelete={props.followup!.onDelete}
+                onMove={props.followup!.onMove}
+                onEdit={props.followup!.onEdit}
+                onRemove={props.followup?.onRemove}
+                onDisableQueue={props.followup?.onDisableQueue}
+              />
               </Show>
               <PromptInput
                 ref={props.inputRef}

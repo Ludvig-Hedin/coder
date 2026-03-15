@@ -14,10 +14,13 @@ export interface DialogProps extends ParentProps {
   containerClassList?: ComponentProps<"div">["classList"]
   fit?: boolean
   transition?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function Dialog(props: DialogProps) {
   const i18n = useI18n()
+
   return (
     <div
       data-component="dialog"
@@ -25,67 +28,58 @@ export function Dialog(props: DialogProps) {
       data-size={props.size || "normal"}
       data-transition={props.transition ? true : undefined}
     >
-<<<<<<< HEAD
-      <div
-        data-slot="dialog-container"
-        classList={{
-=======
       <Kobalte open={props.open} onOpenChange={props.onOpenChange}>
         <div
           data-slot="dialog-container"
           classList={{
->>>>>>> d67f04c0b (Wrap dialog parts with Kobalte)
-          ...(props.containerClassList ?? {}),
-          [props.containerClass ?? ""]: !!props.containerClass,
-        }}
-      >
-        <Kobalte.Content
-          data-slot="dialog-content"
-          data-no-header={!props.title && !props.action ? "" : undefined}
-          classList={{
-            ...(props.classList ?? {}),
-            [props.class ?? ""]: !!props.class,
-          }}
-          onOpenAutoFocus={(e) => {
-            const target = e.currentTarget as HTMLElement | null
-            const autofocusEl = target?.querySelector("[autofocus]") as HTMLElement | null
-            if (autofocusEl) {
-              e.preventDefault()
-              autofocusEl.focus()
-            }
+            ...(props.containerClassList ?? {}),
+            [props.containerClass ?? ""]: !!props.containerClass,
           }}
         >
-          <Show when={props.title || props.action}>
-            <div data-slot="dialog-header">
-              <Show when={props.title}>
-                <Kobalte.Title data-slot="dialog-title">{props.title}</Kobalte.Title>
-              </Show>
-              <Switch>
-                <Match when={props.action}>{props.action}</Match>
-                <Match when={true}>
-                  <Kobalte.CloseButton
-                    data-slot="dialog-close-button"
-                    as={IconButton}
-                    icon="close"
-                    variant="ghost"
-                    aria-label={i18n.t("ui.common.close")}
-                  />
-                </Match>
-              </Switch>
-            </div>
-          </Show>
-          <Show when={props.description}>
-            <Kobalte.Description data-slot="dialog-description" style={{ "margin-left": "-4px" }}>
-              {props.description}
-            </Kobalte.Description>
-          </Show>
-          <div data-slot="dialog-body">{props.children}</div>
-        </Kobalte.Content>
-      </div>
-<<<<<<< HEAD
-=======
+          <Kobalte.Content
+            data-slot="dialog-content"
+            data-no-header={!props.title && !props.action ? "" : undefined}
+            classList={{
+              ...(props.classList ?? {}),
+              [props.class ?? ""]: !!props.class,
+            }}
+            onOpenAutoFocus={(e) => {
+              const target = e.currentTarget as HTMLElement | null
+              const autofocusEl = target?.querySelector("[autofocus]") as HTMLElement | null
+              if (autofocusEl) {
+                e.preventDefault()
+                autofocusEl.focus()
+              }
+            }}
+          >
+            <Show when={props.title || props.action}>
+              <div data-slot="dialog-header">
+                <Show when={props.title}>
+                  <Kobalte.Title data-slot="dialog-title">{props.title}</Kobalte.Title>
+                </Show>
+                <Switch>
+                  <Match when={props.action}>{props.action}</Match>
+                  <Match when={true}>
+                    <Kobalte.CloseButton
+                      data-slot="dialog-close-button"
+                      as={IconButton}
+                      icon="close"
+                      variant="ghost"
+                      aria-label={i18n.t("ui.common.close")}
+                    />
+                  </Match>
+                </Switch>
+              </div>
+            </Show>
+            <Show when={props.description}>
+              <Kobalte.Description data-slot="dialog-description" style={{ "margin-left": "-4px" }}>
+                {props.description}
+              </Kobalte.Description>
+            </Show>
+            <div data-slot="dialog-body">{props.children}</div>
+          </Kobalte.Content>
+        </div>
       </Kobalte>
->>>>>>> d67f04c0b (Wrap dialog parts with Kobalte)
     </div>
   )
 }

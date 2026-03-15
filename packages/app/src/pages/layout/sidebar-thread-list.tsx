@@ -281,10 +281,10 @@ const ProjectSection = (props: {
         </button>
         <DropdownMenu open={menuOpen()} onOpenChange={setMenuOpen}>
           <Tooltip value="Project actions" placement="top">
-            <DropdownMenu.Trigger
-              as={IconButton}
-              icon="dots"
-              variant="ghost"
+          <DropdownMenu.Trigger
+            as={IconButton}
+            icon="dot-grid"
+            variant="ghost"
               class="size-5 rounded-md text-icon-weak opacity-0 transition-opacity group-hover/project:opacity-100 group-focus-within/project:opacity-100"
               aria-label="Project actions"
             />
