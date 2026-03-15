@@ -56,6 +56,8 @@ const SessionRow = (props: {
   item: Item
   active: Accessor<boolean>
   onArchive: (session: Session) => void
+  onEdit: (session: Session) => void
+  onRemove: (session: Session) => void
 }): JSX.Element => {
   const globalSync = useGlobalSync()
   const language = useLanguage()
@@ -76,6 +78,11 @@ const SessionRow = (props: {
   const liveDel = createMemo(() => live().reduce((sum, diff) => sum + (diff.deletions ?? 0), 0))
   const diffAdd = createMemo(() => (live().length > 0 ? liveAdd() : add()))
   const diffDel = createMemo(() => (live().length > 0 ? liveDel() : del()))
+  const [menuOpen, setMenuOpen] = createSignal(false)
+  const handleContext = (event: Event) => {
+    event.preventDefault()
+    setMenuOpen(true)
+  }
 
   return (
     <div
@@ -91,6 +98,9 @@ const SessionRow = (props: {
         href={href()}
         class="flex min-w-0 items-center gap-2 text-left"
         aria-current={props.active() ? "page" : undefined}
+        onContextMenu={(event) => {
+          handleContext(event)
+        }}
         style={{
           "border-radius": row.radius,
           "padding-left": row.padX,
@@ -142,6 +152,47 @@ const SessionRow = (props: {
         </span>
       </A>
 
+      <div class="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover/thread:opacity-100 group-focus-within/thread:opacity-100">
+        <DropdownMenu open={menuOpen()} onOpenChange={setMenuOpen}>
+          <Tooltip value="Thread actions" placement="top">
+        <DropdownMenu.Trigger
+          as={IconButton}
+          icon="dot-grid"
+          variant="ghost"
+          class="size-6 rounded-md text-icon-weak"
+        />
+          </Tooltip>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content class="mt-1 w-48 rounded-[18px] p-2">
+              <DropdownMenu.Item
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+                onSelect={() => {
+                  setMenuOpen(false)
+                  props.onEdit(props.item.session)
+                }}
+              >
+                <div class="flex size-5 shrink-0 items-center justify-center text-icon-weak">
+                  <Icon name="pencil-line" size="small" />
+                </div>
+                <DropdownMenu.ItemLabel class="min-w-0 flex-1 text-14-medium">Edit name</DropdownMenu.ItemLabel>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+                onSelect={() => {
+                  setMenuOpen(false)
+                  props.onRemove(props.item.session)
+                }}
+              >
+                <div class="flex size-5 shrink-0 items-center justify-center text-icon-critical-base">
+                  <Icon name="trash" size="small" />
+                </div>
+                <DropdownMenu.ItemLabel class="min-w-0 flex-1 text-14-medium">Remove</DropdownMenu.ItemLabel>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu>
+      </div>
+
       <div class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover/thread:opacity-100 group-focus-within/thread:opacity-100">
         <IconButton
           icon="archive"
@@ -169,7 +220,11 @@ const ProjectSection = (props: {
   onSelect: (project: LocalProject) => void
   onToggle: (project: LocalProject) => void
   onNew: (project: LocalProject) => void
+  onEdit: (project: LocalProject) => void
+  onRemove: (project: LocalProject) => void
   onArchive: (session: Session) => void
+  onEditThread: (session: Session) => void
+  onRemoveThread: (session: Session) => void
 }): JSX.Element => {
   const selected = createMemo(() => props.project.worktree === props.currentDir())
   const name = createMemo(() => props.project.name || getFilename(props.project.worktree))
@@ -182,6 +237,12 @@ const ProjectSection = (props: {
   )
   const open = createMemo(() => props.expanded(props.project))
 
+  const [menuOpen, setMenuOpen] = createSignal(false)
+  const handleContext = (event: Event) => {
+    event.preventDefault()
+    setMenuOpen(true)
+  }
+
   return (
     <section class="flex flex-col gap-1">
       <div
@@ -193,6 +254,9 @@ const ProjectSection = (props: {
           "padding-top": row.padY,
           "padding-bottom": row.padY,
         }}
+        onContextMenu={(event) => {
+          handleContext(event)
+        }}
       >
         <IconButton
           icon="chevron-down"
@@ -200,9 +264,7 @@ const ProjectSection = (props: {
           class="size-5 shrink-0 rounded-md text-icon-weak transition-transform"
           classList={{ "-rotate-90": !open() }}
           aria-label={open() ? "Collapse project" : "Expand project"}
-          onClick={(event) => {
-            event.preventDefault()
-            event.stopPropagation()
+          onClick={() => {
             props.onToggle(props.project)
           }}
         />
@@ -217,19 +279,45 @@ const ProjectSection = (props: {
             {name()}
           </span>
         </button>
-        <Tooltip value="New thread" placement="top">
-          <IconButton
-            icon="new-session"
-            variant="ghost"
-            class="size-5 shrink-0 rounded-md text-icon-weak opacity-0 transition-opacity group-hover/project:opacity-100 group-focus-within/project:opacity-100"
-            aria-label="New thread"
-            onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              props.onNew(props.project)
-            }}
-          />
-        </Tooltip>
+        <DropdownMenu open={menuOpen()} onOpenChange={setMenuOpen}>
+          <Tooltip value="Project actions" placement="top">
+        <DropdownMenu.Trigger
+          as={IconButton}
+          icon="dot-grid"
+          variant="ghost"
+          class="size-5 rounded-md text-icon-weak opacity-0 transition-opacity group-hover/project:opacity-100 group-focus-within/project:opacity-100"
+          aria-label="Project actions"
+        />
+          </Tooltip>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content class="mt-1 w-56 rounded-[18px] p-2">
+            <DropdownMenu.Item
+              class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+              onSelect={() => {
+                setMenuOpen(false)
+                props.onEdit(props.project)
+              }}
+            >
+                <div class="flex size-5 shrink-0 items-center justify-center text-icon-weak">
+                  <Icon name="pencil-line" size="small" />
+                </div>
+                <DropdownMenu.ItemLabel class="min-w-0 flex-1 text-14-medium">Edit name</DropdownMenu.ItemLabel>
+              </DropdownMenu.Item>
+            <DropdownMenu.Item
+              class="flex items-center gap-3 rounded-lg px-3 py-2 text-text-strong"
+              onSelect={() => {
+                setMenuOpen(false)
+                props.onRemove(props.project)
+              }}
+            >
+                <div class="flex size-5 shrink-0 items-center justify-center text-icon-critical-base">
+                  <Icon name="trash" size="small" />
+                </div>
+                <DropdownMenu.ItemLabel class="min-w-0 flex-1 text-14-medium">Remove</DropdownMenu.ItemLabel>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu>
       </div>
 
       <Show when={open() && items().length > 0}>
@@ -240,6 +328,8 @@ const ProjectSection = (props: {
                 item={item}
                 active={() => props.currentSession() === item.session.id}
                 onArchive={props.onArchive}
+                onEdit={props.onEditThread}
+                onRemove={props.onRemoveThread}
               />
             )}
           </For>
@@ -260,10 +350,14 @@ export const SidebarThreadList = (props: {
   onSelectProject: (project: LocalProject) => void
   onToggleProject: (project: LocalProject) => void
   onNewProject: (project: LocalProject) => void
+  onEditProject: (project: LocalProject) => void
+  onRemoveProject: (project: LocalProject) => void
   onArchive: (session: Session) => void
   onNew: () => void
   onOpenProject: () => void
   onOpenSettings: () => void
+  onEditThread: (session: Session) => void
+  onRemoveThread: (session: Session) => void
 }): JSX.Element => {
   const language = useLanguage()
   const [organize, setOrganize] = createSignal<"project" | "chronological">("project")
@@ -396,11 +490,15 @@ export const SidebarThreadList = (props: {
                   sessions={props.sessions}
                   expanded={props.expanded}
                   onSelect={props.onSelectProject}
-                  onToggle={props.onToggleProject}
-                  onNew={props.onNewProject}
-                  onArchive={props.onArchive}
-                />
-              )}
+                onToggle={props.onToggleProject}
+                onNew={props.onNewProject}
+                onEdit={props.onEditProject}
+                onRemove={props.onRemoveProject}
+                onEditThread={props.onEditThread}
+                onRemoveThread={props.onRemoveThread}
+                onArchive={props.onArchive}
+              />
+            )}
             </For>
           </div>
         </section>

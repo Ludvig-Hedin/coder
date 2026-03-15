@@ -1341,10 +1341,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           <div
             class="relative max-h-[240px] overflow-y-auto no-scrollbar"
             ref={(el) => (scrollRef = el)}
-          style={{
-            "scroll-padding-bottom": space,
-            "padding-top": `${attachmentsSpacing()}px`,
-          }}
+            style={{
+              "scroll-padding-bottom": space,
+              "padding-top": `${attachmentsSpacing()}px`,
+            }}
           >
             <div
               data-component="prompt-input"
@@ -1612,7 +1612,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   onClick={toggleAccept}
                   class="group h-7 px-3 flex items-center gap-2 rounded-full text-11-regular text-text-weak transition-colors duration-150 hover:text-text-strong"
                   classList={{
-                    "bg-surface-success-base/50 hover:bg-surface-success-base": accepting(),
+                    "text-[orange-500] hover:bg-accent": accepting(),
                   }}
                   style={control()}
                   aria-label={acceptLabel()}
@@ -1624,7 +1624,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                     class="transition-colors duration-150 group-hover:text-text-strong"
                     classList={{ "text-icon-success-base": accepting(), "text-text-weak": !accepting() }}
                   />
-                  <span class="text-10-regular uppercase tracking-[0.25em] text-text-weak group-hover:text-text-strong">
+                  <span class="text-10-regular uppercase tracking-tight text-text-weak group-hover:text-text-strong">
                     {language.t("prompt.autoaccept.label")}
                   </span>
                   <span class="text-11-regular text-text-weak opacity-70 group-hover:text-text-strong">

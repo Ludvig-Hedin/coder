@@ -68,7 +68,7 @@
   }
 
   [data-dock-surface="tray"][data-dock-attach="top"] {
-    background-color: var(--surface-raised-stronger-non-alpha);
+    background-color: var(--surface-raised-stronger);
     backdrop-filter: blur(18px);
     border-radius: 8px;
   }

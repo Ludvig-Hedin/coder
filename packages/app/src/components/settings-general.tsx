@@ -246,7 +246,6 @@ export const SettingsGeneral: Component = () => {
             variant="secondary"
             size="small"
             triggerVariant="settings"
-            triggerStyle={{ "min-width": "180px" }}
           />
         </SettingsRow>
       </SettingsList>
@@ -277,7 +276,6 @@ export const SettingsGeneral: Component = () => {
             variant="secondary"
             size="small"
             triggerVariant="settings"
-            triggerStyle={{ "min-width": "220px" }}
           />
         </SettingsRow>
 
@@ -325,7 +323,7 @@ export const SettingsGeneral: Component = () => {
             variant="secondary"
             size="small"
             triggerVariant="settings"
-            triggerStyle={{ "font-family": monoFontFamily(settings.appearance.font()), "min-width": "180px" }}
+            triggerStyle={{ "font-family": monoFontFamily(settings.appearance.font()) }}
           >
             {(option) => (
               <span style={{ "font-family": monoFontFamily(option?.value) }}>

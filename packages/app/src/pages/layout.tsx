@@ -63,6 +63,7 @@ import { useCommand, type CommandOption } from "@/context/command"
 import { ConstrainDragXAxis, getDraggableId } from "@/utils/solid-dnd"
 import { DialogSelectDirectory } from "@/components/dialog-select-directory"
 import { DialogEditProject } from "@/components/dialog-edit-project"
+import { DialogEditThread } from "@/components/dialog-edit-thread"
 import { DebugBar } from "@/components/debug-bar"
 import { Titlebar } from "@/components/titlebar"
 import { useServer } from "@/context/server"
@@ -1400,6 +1401,58 @@ export default function Layout(props: ParentProps) {
   }
 
   const showEditProjectDialog = (project: LocalProject) => dialog.show(() => <DialogEditProject project={project} />)
+  const confirmRemoveProject = (project: LocalProject) => {
+    const name = displayName(project)
+    dialog.show(() => (
+      <Dialog title={language.t("common.delete")}>
+        <div class="flex flex-col gap-4 p-6">
+          <p class="text-14-regular text-text-weak">
+            {`Are you sure you want to remove ${name}? This will close the project but keep your history.`}
+          </p>
+          <div class="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => dialog.close()}>
+              {language.t("common.cancel")}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                closeProject(project.worktree)
+                dialog.close()
+              }}
+            >
+              {language.t("common.delete")}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    ))
+  }
+  const showEditThreadDialog = (session: Session) => dialog.show(() => <DialogEditThread session={session} />)
+  const confirmRemoveThread = (session: Session) => {
+    dialog.show(() => (
+      <Dialog title={language.t("common.delete")}>
+        <div class="flex flex-col gap-4 p-6">
+          <p class="text-14-regular text-text-weak">
+            {"Are you sure you want to remove this thread?"}
+          </p>
+          <div class="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => dialog.close()}>
+              {language.t("common.cancel")}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={async () => {
+                await archiveSession(session)
+                dialog.close()
+              }}
+            >
+              {language.t("common.delete")}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    ))
+  }
 
   async function chooseProject() {
     function resolve(result: string | string[] | null) {
@@ -2325,10 +2378,14 @@ export default function Layout(props: ParentProps) {
       onSelectProject={selectProjectList}
       onToggleProject={toggleProjectList}
       onNewProject={openProjectThread}
+      onEditProject={showEditProjectDialog}
+      onRemoveProject={confirmRemoveProject}
       onArchive={(session) => void archiveSession(session)}
       onNew={openNewThread}
       onOpenProject={() => void chooseProject()}
       onOpenSettings={openSettings}
+      onEditThread={(session) => showEditThreadDialog(session)}
+      onRemoveThread={(session) => confirmRemoveThread(session)}
     />
   )
 

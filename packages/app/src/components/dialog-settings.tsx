@@ -1,7 +1,9 @@
 import { Component } from "solid-js"
 import { Dialog } from "@opencode-ai/ui/dialog"
 import { Tabs } from "@opencode-ai/ui/tabs"
+import { Dialog as KobalteDialog } from "@kobalte/core/dialog"
 import { Icon } from "@opencode-ai/ui/icon"
+import { IconButton } from "@opencode-ai/ui/icon-button"
 import { useLanguage } from "@/context/language"
 import { usePlatform } from "@/context/platform"
 import { SettingsGeneral } from "./settings-general"
@@ -15,6 +17,14 @@ export const DialogSettings: Component = () => {
 
   return (
     <Dialog size="x-large" transition>
+      <div class="absolute top-4 right-4 z-50">
+        <KobalteDialog.CloseButton
+          as={IconButton}
+          icon="close"
+          variant="ghost"
+          aria-label={language.t("ui.common.close")}
+        />
+      </div>
       <Tabs orientation="vertical" variant="settings" defaultValue="general" class="h-full settings-dialog">
         <Tabs.List>
           <div class="flex flex-col justify-between h-full w-full">
