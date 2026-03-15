@@ -6,3 +6,6 @@
 - If queueing is not available, `Enter` sends immediately.
 - Queued messages render between the AI task list and the prompt input.
 - Queued messages support drag reorder, send now, edit, and delete actions.
+- The model selector renders inside the input, immediately to the right of the attach button.
+- The reasoning effort selector renders next to the model selector only when the selected model supports reasoning.
+- Reasoning effort options expose inline explanations on hover and the bottom bar keeps muted secondary emphasis.

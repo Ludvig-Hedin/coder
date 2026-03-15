@@ -101,6 +101,11 @@ const EXAMPLES = [
 
 const NON_EMPTY_TEXT = /[^\s\u200B]/
 
+const reasonText = (value: string) => {
+  if (value === "xhigh") return "Extra High"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export const PromptInput: Component<PromptInputProps> = (props) => {
   const sdk = useSDK()
   const sync = useSync()
@@ -245,6 +250,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       },
   )
   const working = createMemo(() => status()?.type !== "idle")
+  const currentModel = createMemo(() => local.model.current())
+  const reasoningEnabled = createMemo(
+    () => !!currentModel()?.reasoning && local.model.variant.list().length > 0,
+  )
   const imageAttachments = createMemo(() =>
     prompt.current().filter((part): part is ImageAttachmentPart => part.type === "image"),
   )
@@ -283,7 +292,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const buttons = createMemo(() => motion(buttonsSpring()))
   const shell = createMemo(() => motion(1 - buttonsSpring()))
   const control = createMemo(() => ({ height: "28px", ...buttons() }))
-  const toolbarTextClass = "text-13-regular text-text-weak transition-colors duration-150 hover:text-text-strong"
+  const toolbarTextClass =
+    "text-13-regular text-text-weak/70 transition-colors duration-150 hover:text-text-weak"
+  const selectorTextClass =
+    "text-13-regular text-text-weak/70 transition-colors duration-150 hover:text-text-strong"
 
   const commentCount = createMemo(() => {
     if (store.mode === "shell") return 0
@@ -1055,7 +1067,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     readClipboardImage: platform.readClipboardImage,
   })
 
-  const variants = createMemo(() => ["default", ...local.model.variant.list()])
+  const reasoning = createMemo(() => local.model.variant.list())
+  const currentReasoning = createMemo(() => local.model.variant.current() ?? reasoning()[0])
+  const reasonHelp = (value: string) => {
+    if (value === "low") return language.t("prompt.reasoning.description.low")
+    if (value === "medium") return language.t("prompt.reasoning.description.medium")
+    if (value === "high") return language.t("prompt.reasoning.description.high")
+    if (value === "xhigh") return language.t("prompt.reasoning.description.xhigh")
+    return ""
+  }
   const accepting = createMemo(() => {
     const id = params.id
     if (!id) return permission.isAutoAcceptingDirectory(sdk.directory)
@@ -1109,6 +1129,110 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
   const sendKeybind = createMemo(() => formatKeybind("mod+enter", language.t))
   const queueKeybind = createMemo(() => formatKeybind("enter", language.t))
+  const [reasonHover, setReasonHover] = createSignal<string>()
+
+  const modelControl = () => (
+    <div data-component="prompt-model-control">
+      <Show
+        when={providers.paid().length > 0}
+        fallback={
+          <TooltipKeybind
+            placement="top"
+            gutter={4}
+            title={language.t("command.model.choose")}
+            keybind={command.keybind("model.choose")}
+          >
+            <Button
+              data-action="prompt-model"
+              as="div"
+              variant="ghost"
+              size="normal"
+              class={`min-w-0 max-w-[220px] rounded-full px-3 ${selectorTextClass}`}
+              style={buttons()}
+              onClick={() => dialog.show(() => <DialogSelectModelUnpaid model={local.model} />)}
+            >
+              <Show when={currentModel()?.provider?.id}>
+                <ProviderIcon
+                  id={currentModel()!.provider.id}
+                  class="size-4 shrink-0 opacity-55"
+                  style={{ "will-change": "opacity", transform: "translateZ(0)" }}
+                />
+              </Show>
+              <span class="truncate">{currentModel()?.name ?? language.t("dialog.model.select.title")}</span>
+              <Icon name="chevron-down" size="small" class="shrink-0 opacity-70" />
+            </Button>
+          </TooltipKeybind>
+        }
+      >
+        <TooltipKeybind
+          placement="top"
+          gutter={4}
+          title={language.t("command.model.choose")}
+          keybind={command.keybind("model.choose")}
+        >
+          <ModelSelectorPopover
+            model={local.model}
+            triggerAs={Button}
+            triggerProps={{
+              variant: "ghost",
+              size: "normal",
+              style: buttons(),
+              class: `min-w-0 max-w-[220px] rounded-full px-3 ${selectorTextClass}`,
+              "data-action": "prompt-model",
+            }}
+          >
+            <Show when={currentModel()?.provider?.id}>
+              <ProviderIcon
+                id={currentModel()!.provider.id}
+                class="size-4 shrink-0 opacity-55"
+                style={{ "will-change": "opacity", transform: "translateZ(0)" }}
+              />
+            </Show>
+            <span class="truncate">{currentModel()?.name ?? language.t("dialog.model.select.title")}</span>
+            <Icon name="chevron-down" size="small" class="shrink-0 opacity-70" />
+          </ModelSelectorPopover>
+        </TooltipKeybind>
+      </Show>
+    </div>
+  )
+
+  const reasoningControl = () => (
+    <Show when={reasoningEnabled()}>
+      <div data-component="prompt-variant-control">
+        <Select
+          size="normal"
+          options={reasoning()}
+          current={currentReasoning()}
+          groupBy={() => language.t("prompt.reasoning.title")}
+          label={(x) => reasonText(x)}
+          onSelect={(x) => local.model.variant.set(x)}
+          onHighlight={(x) => {
+            setReasonHover(x)
+            return () => setReasonHover(undefined)
+          }}
+          class={`capitalize ${selectorTextClass}`}
+          valueClass={`truncate ${selectorTextClass}`}
+          triggerStyle={buttons()}
+          triggerProps={{ "data-action": "prompt-model-variant" }}
+          variant="ghost"
+        >
+          {(item) => (
+            <Tooltip
+              placement="right"
+              gutter={8}
+              forceOpen={reasonHover() === item}
+              value={<div class="text-12-regular">{reasonHelp(item ?? "")}</div>}
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-text-weak/85">◌</span>
+                <span>{reasonText(item ?? "")}</span>
+              </div>
+            </Tooltip>
+          )}
+        </Select>
+      </div>
+    </Show>
+  )
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "u") {
@@ -1471,7 +1595,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           <div class="pointer-events-none absolute bottom-2 left-2">
             <div
               aria-hidden={store.mode !== "normal"}
-              class="pointer-events-auto"
+              class="pointer-events-auto flex items-center gap-1.5"
               style={{
                 "pointer-events": store.mode === "normal" ? "auto" : "none",
               }}
@@ -1485,7 +1609,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   data-action="prompt-attach"
                   type="button"
                   variant="ghost"
-                  class="size-8 p-0 rounded-full border-0"
+                  class="size-8 p-0 rounded-full border-0 text-text-weak/70 hover:text-text-strong"
                   style={buttons()}
                   onClick={pick}
                   disabled={store.mode !== "normal"}
@@ -1495,6 +1619,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   <Icon name="plus" class="size-4.5" />
                 </Button>
               </TooltipKeybind>
+              {modelControl()}
+              {reasoningControl()}
             </div>
           </div>
         </div>
@@ -1534,89 +1660,6 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                     />
                   </TooltipKeybind>
                 </div>
-                <div data-component="prompt-model-control">
-                  <Show
-                    when={providers.paid().length > 0}
-                    fallback={
-                      <TooltipKeybind
-                        placement="top"
-                        gutter={4}
-                        title={language.t("command.model.choose")}
-                        keybind={command.keybind("model.choose")}
-                      >
-                        <Button
-                          data-action="prompt-model"
-                          as="div"
-                          variant="ghost"
-                          size="normal"
-                          class={`min-w-0 max-w-[320px] group ${toolbarTextClass}`}
-                          style={control()}
-                          onClick={() => dialog.show(() => <DialogSelectModelUnpaid model={local.model} />)}
-                        >
-                          <Show when={local.model.current()?.provider?.id}>
-                            <ProviderIcon
-                              id={local.model.current()!.provider.id}
-                              class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
-                              style={{ "will-change": "opacity", transform: "translateZ(0)" }}
-                            />
-                          </Show>
-                          <span class="truncate">{local.model.current()?.name ?? language.t("dialog.model.select.title")}</span>
-                          <Icon name="chevron-down" size="small" class="shrink-0" />
-                        </Button>
-                      </TooltipKeybind>
-                    }
-                  >
-                    <TooltipKeybind
-                      placement="top"
-                      gutter={4}
-                      title={language.t("command.model.choose")}
-                      keybind={command.keybind("model.choose")}
-                    >
-                      <ModelSelectorPopover
-                        model={local.model}
-                        triggerAs={Button}
-                        triggerProps={{
-                          variant: "ghost",
-                          size: "normal",
-                          style: control(),
-                          class: `min-w-0 max-w-[320px] group ${toolbarTextClass}`,
-                          "data-action": "prompt-model",
-                        }}
-                      >
-                        <Show when={local.model.current()?.provider?.id}>
-                          <ProviderIcon
-                            id={local.model.current()!.provider.id}
-                            class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
-                            style={{ "will-change": "opacity", transform: "translateZ(0)" }}
-                          />
-                        </Show>
-                        <span class="truncate">{local.model.current()?.name ?? language.t("dialog.model.select.title")}</span>
-                        <Icon name="chevron-down" size="small" class="shrink-0" />
-                      </ModelSelectorPopover>
-                    </TooltipKeybind>
-                  </Show>
-                </div>
-                <div data-component="prompt-variant-control">
-                  <TooltipKeybind
-                    placement="top"
-                    gutter={4}
-                    title={language.t("command.model.variant.cycle")}
-                    keybind={command.keybind("model.variant.cycle")}
-                  >
-                    <Select
-                      size="normal"
-                      options={variants()}
-                      current={local.model.variant.current() ?? "default"}
-                      label={(x) => (x === "default" ? language.t("common.default") : x)}
-                      onSelect={(x) => local.model.variant.set(x === "default" ? undefined : x)}
-                      class={`capitalize max-w-[160px] ${toolbarTextClass}`}
-                      valueClass={`truncate ${toolbarTextClass}`}
-                      triggerStyle={control()}
-                      triggerProps={{ "data-action": "prompt-model-variant" }}
-                      variant="ghost"
-                    />
-                  </TooltipKeybind>
-                </div>
               </div>
             </div>
             <div class="flex items-center gap-3">
@@ -1631,7 +1674,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   data-action="prompt-permissions"
                   variant="ghost"
                   onClick={toggleAccept}
-                  class="group h-7 px-3 flex items-center gap-2 rounded-full text-11-regular text-text-weak transition-colors duration-150 hover:text-text-strong"
+                  class="group h-7 px-3 flex items-center gap-2 rounded-full text-11-regular text-text-weak/70 transition-colors duration-150 hover:text-text-weak"
                   classList={{
                     "text-[orange-500] hover:bg-accent": accepting(),
                   }}
@@ -1642,13 +1685,13 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                   <Icon
                     name="shield"
                     size="small"
-                    class="transition-colors duration-150 group-hover:text-text-strong"
-                    classList={{ "text-icon-success-base": accepting(), "text-text-weak": !accepting() }}
+                    class="transition-colors duration-150 group-hover:text-text-weak"
+                    classList={{ "text-icon-success-base": accepting(), "text-text-weak/70": !accepting() }}
                   />
-                  <span class="text-10-regular uppercase tracking-tight text-text-weak group-hover:text-text-strong">
+                  <span class="text-11-regular tracking-tight text-text-weak/70 group-hover:text-text-weak">
                     {language.t("prompt.autoaccept.label")}
                   </span>
-                  <span class="text-11-regular text-text-weak opacity-70 group-hover:text-text-strong">
+                  <span class="text-11-regular text-text-weak/60 group-hover:text-text-weak">
                     {autoAcceptStateLabel()}
                   </span>
                 </Button>
