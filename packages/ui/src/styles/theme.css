@@ -121,7 +121,7 @@
   --surface-strong: #ffffff;
   --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
   --surface-raised-stronger-non-alpha: #ffffff;
-  --surface-user-message: rgba(0, 0, 0, 0.025);
+  --surface-user-message: rgba(0, 0, 0, 0.01);
   --surface-brand-base: #dcde8d;
   --surface-brand-hover: #d0d283;
   --surface-interactive-base: #ecf3ff;
@@ -305,7 +305,7 @@
   /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
   --syntax-comment: var(--text-weaker); /* Muted gray for comments */
   --syntax-regexp: var(--text-base); /* Standard text for regex */
-  --syntax-string: var(--text-strong); /* Strong text for strings - monochrome */
+  --syntax-string: var(--text-base); /* Primary text color for strings - monochrome */
   --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
   --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
   --syntax-operator: var(--text-base); /* Standard for operators */
@@ -386,7 +386,7 @@
     --surface-strong: rgba(255, 255, 255, 0.169);
     --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
     --surface-raised-stronger-non-alpha: #1c1c1c;
-    --surface-user-message: rgba(255, 255, 255, 0.04);
+    --surface-user-message: rgba(255, 255, 255, 0.02);
     --surface-brand-base: #fab283;
     --surface-brand-hover: #eda779;
     --surface-interactive-base: #091f52;
@@ -570,7 +570,7 @@
     /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
     --syntax-comment: var(--text-weaker); /* Muted gray for comments */
     --syntax-regexp: var(--text-base); /* Standard text for regex */
-    --syntax-string: var(--text-strong); /* Strong text for strings - monochrome */
+    --syntax-string: var(--text-base); /* Primary text color for strings - monochrome */
     --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
     --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
     --syntax-operator: var(--text-weak); /* Muted for operators */

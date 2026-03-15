@@ -28,8 +28,8 @@
   }
 
   .group\/prompt-input[data-dock-surface="shell"] {
-    border-radius: 1.75rem;
-    border: 1px solid var(--border-weaker-base);
+    border-radius: 2.25rem;
+    border: 1px solid var(--border-weak-base);
     box-shadow: var(--shadow-xxs-border);
     background-color: var(--surface-raised-stronger-non-alpha);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -44,5 +44,17 @@
     backdrop-filter: blur(18px);
     border-radius: 0 0 1.75rem 1.75rem;
     box-shadow: var(--shadow-xxs-border);
+  }
+
+  .group\/prompt-input[data-dock-surface="shell"] + [data-dock-surface="tray"] {
+    border-radius: 0 0 2rem 2rem;
+    box-shadow: none;
+    border: none;
+    background-color: var(--surface-raised-stronger-non-alpha);
+  }
+
+  .group\/prompt-input[data-dock-surface="shell"] + [data-dock-surface="tray"] * {
+    color: var(--text-base);
+    opacity: 1;
   }
 }

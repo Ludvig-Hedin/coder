@@ -136,7 +136,14 @@
     border-radius: 6px;
 
     [data-highlight="file"] {
-      color: var(--syntax-property);
+      color: var(--text-base);
+      background: var(--surface-weak);
+      border-radius: 0.65rem;
+      padding: 0 0.45rem;
+      margin: 0 0.2rem;
+      display: inline-flex;
+      align-items: center;
+      line-height: inherit;
     }
 
     [data-highlight="agent"] {

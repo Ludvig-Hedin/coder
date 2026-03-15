@@ -267,12 +267,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   })
 
   const buttonsSpring = useSpring(() => (store.mode === "normal" ? 1 : 0), { visualDuration: 0.2, bounce: 0 })
-  const motion = (value: number) => ({
-    opacity: 1,
-    transform: `scale(1)`,
-    filter: `blur(0px)`,
-    "pointer-events": store.mode === "normal" ? ("auto" as const) : ("none" as const),
-  })
+  const motion = (value: number) => {
+    const active = value > 0.5
+    return {
+      opacity: value,
+      transform: `scale(${0.98 + value * 0.02})`,
+      filter: `blur(0px)`,
+      "pointer-events": active ? ("auto" as const) : ("none" as const),
+    }
+  }
   const buttons = createMemo(() => motion(buttonsSpring()))
   const shell = createMemo(() => motion(1 - buttonsSpring()))
   const control = createMemo(() => ({ height: "28px", ...buttons() }))
