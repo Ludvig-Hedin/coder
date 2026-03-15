@@ -75,6 +75,9 @@ export const dict = {
   "command.prompt.mode.normal": "Prompt",
   "command.permissions.autoaccept.enable": "Auto-accept permissions",
   "command.permissions.autoaccept.disable": "Stop auto-accepting permissions",
+  "prompt.autoaccept.label": "Auto",
+  "prompt.autoaccept.state.on": "On",
+  "prompt.autoaccept.state.off": "Off",
   "command.workspace.toggle": "Toggle workspaces",
   "command.workspace.toggle.description": "Enable or disable multiple workspaces in the sidebar",
   "command.session.undo": "Undo",
@@ -566,6 +569,8 @@ export const dict = {
   "session.revertDock.restore": "Restore message",
 
   "session.new.title": "Build anything",
+  "session.new.project.select": "Select your project",
+  "session.new.project.add": "Add new project",
   "session.new.worktree.main": "Main branch",
   "session.new.worktree.mainWithBranch": "Main branch ({{branch}})",
   "session.new.worktree.create": "Create new worktree",

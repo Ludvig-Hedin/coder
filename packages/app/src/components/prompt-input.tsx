@@ -29,6 +29,7 @@ import { Select } from "@opencode-ai/ui/select"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ModelSelectorPopover } from "@/components/dialog-select-model"
 import { DialogSelectModelUnpaid } from "@/components/dialog-select-model-unpaid"
+import { SessionContextUsage } from "@/components/session-context-usage"
 import { useProviders } from "@/hooks/use-providers"
 import { useCommand } from "@/context/command"
 import { Persist, persisted } from "@/utils/persist"
@@ -281,6 +282,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const buttons = createMemo(() => motion(buttonsSpring()))
   const shell = createMemo(() => motion(1 - buttonsSpring()))
   const control = createMemo(() => ({ height: "28px", ...buttons() }))
+  const toolbarTextClass = "text-13-regular text-text-weak transition-colors duration-150 hover:text-text-strong"
 
   const commentCount = createMemo(() => {
     if (store.mode === "shell") return 0
@@ -1061,6 +1063,16 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const acceptLabel = createMemo(() =>
     language.t(accepting() ? "command.permissions.autoaccept.disable" : "command.permissions.autoaccept.enable"),
   )
+  const autoAcceptStateLabel = createMemo(() =>
+    language.t(accepting() ? "prompt.autoaccept.state.on" : "prompt.autoaccept.state.off"),
+  )
+  const autoAcceptTooltip = createMemo(() =>
+    language.t(
+      accepting()
+        ? "toast.permissions.autoaccept.on.description"
+        : "toast.permissions.autoaccept.off.description",
+    ),
+  )
   const toggleAccept = () => {
     if (!params.id) {
       permission.toggleAutoAcceptDirectory(sdk.directory)
@@ -1468,8 +1480,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       </DockShellForm>
       <Show when={store.mode === "normal" || store.mode === "shell"}>
         <DockTray attach="top">
-          <div class="px-1.75 pt-5.5 pb-2 flex items-center gap-2 min-w-0">
-            <div class="flex items-center gap-1.5 min-w-0 flex-1 relative">
+          <div class="px-1.75 pt-5.5 pb-2 flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1 relative group">
               <div
                 class="h-7 flex items-center gap-1.5 max-w-[160px] min-w-0 absolute inset-y-0 left-0"
                 style={{
@@ -1493,8 +1505,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       options={agentNames()}
                       current={local.agent.current()?.name ?? ""}
                       onSelect={local.agent.set}
-                      class="capitalize max-w-[160px] text-text-base"
-                      valueClass="truncate text-13-regular text-text-base"
+                      class={`capitalize max-w-[160px] ${toolbarTextClass}`}
+                      valueClass={`truncate ${toolbarTextClass}`}
                       triggerStyle={control()}
                       triggerProps={{ "data-action": "prompt-agent" }}
                       variant="ghost"
@@ -1516,7 +1528,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                           as="div"
                           variant="ghost"
                           size="normal"
-                          class="min-w-0 max-w-[320px] text-13-regular text-text-base group"
+                          class={`min-w-0 max-w-[320px] group ${toolbarTextClass}`}
                           style={control()}
                           onClick={() => dialog.show(() => <DialogSelectModelUnpaid model={local.model} />)}
                         >
@@ -1527,9 +1539,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                               style={{ "will-change": "opacity", transform: "translateZ(0)" }}
                             />
                           </Show>
-                          <span class="truncate">
-                            {local.model.current()?.name ?? language.t("dialog.model.select.title")}
-                          </span>
+                          <span class="truncate">{local.model.current()?.name ?? language.t("dialog.model.select.title")}</span>
                           <Icon name="chevron-down" size="small" class="shrink-0" />
                         </Button>
                       </TooltipKeybind>
@@ -1548,7 +1558,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                           variant: "ghost",
                           size: "normal",
                           style: control(),
-                          class: "min-w-0 max-w-[320px] text-13-regular text-text-base group",
+                          class: `min-w-0 max-w-[320px] group ${toolbarTextClass}`,
                           "data-action": "prompt-model",
                         }}
                       >
@@ -1559,9 +1569,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                             style={{ "will-change": "opacity", transform: "translateZ(0)" }}
                           />
                         </Show>
-                        <span class="truncate">
-                          {local.model.current()?.name ?? language.t("dialog.model.select.title")}
-                        </span>
+                        <span class="truncate">{local.model.current()?.name ?? language.t("dialog.model.select.title")}</span>
                         <Icon name="chevron-down" size="small" class="shrink-0" />
                       </ModelSelectorPopover>
                     </TooltipKeybind>
@@ -1580,38 +1588,50 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       current={local.model.variant.current() ?? "default"}
                       label={(x) => (x === "default" ? language.t("common.default") : x)}
                       onSelect={(x) => local.model.variant.set(x === "default" ? undefined : x)}
-                      class="capitalize max-w-[160px] text-text-base"
-                      valueClass="truncate text-13-regular text-text-base"
+                      class={`capitalize max-w-[160px] ${toolbarTextClass}`}
+                      valueClass={`truncate ${toolbarTextClass}`}
                       triggerStyle={control()}
                       triggerProps={{ "data-action": "prompt-model-variant" }}
                       variant="ghost"
                     />
                   </TooltipKeybind>
                 </div>
-                <TooltipKeybind
-                  placement="top"
-                  gutter={8}
-                  title={acceptLabel()}
-                  keybind={command.keybind("permissions.autoaccept")}
-                >
-                  <Button
-                    data-action="prompt-permissions"
-                    variant="ghost"
-                    onClick={toggleAccept}
-                    classList={{
-                      "h-7 w-7 p-0 shrink-0 flex items-center justify-center": true,
-                      "text-text-base": !accepting(),
-                      "hover:bg-surface-success-base": accepting(),
-                      "bg-surface-success-base/50": accepting(),
-                    }}
-                    style={control()}
-                    aria-label={acceptLabel()}
-                    aria-pressed={accepting()}
-                  >
-                    <Icon name="shield" size="small" classList={{ "text-icon-success-base": accepting() }} />
-                  </Button>
-                </TooltipKeybind>
               </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <SessionContextUsage variant="indicator" placement="bottom" />
+              <TooltipKeybind
+                placement="top"
+                gutter={8}
+                title={autoAcceptTooltip()}
+                keybind={command.keybind("permissions.autoaccept")}
+              >
+                <Button
+                  data-action="prompt-permissions"
+                  variant="ghost"
+                  onClick={toggleAccept}
+                  class="group h-7 px-3 flex items-center gap-2 rounded-full text-11-regular text-text-weak transition-colors duration-150 hover:text-text-strong"
+                  classList={{
+                    "bg-surface-success-base/50 hover:bg-surface-success-base": accepting(),
+                  }}
+                  style={control()}
+                  aria-label={acceptLabel()}
+                  aria-pressed={accepting()}
+                >
+                  <Icon
+                    name="shield"
+                    size="small"
+                    class="transition-colors duration-150 group-hover:text-text-strong"
+                    classList={{ "text-icon-success-base": accepting(), "text-text-weak": !accepting() }}
+                  />
+                  <span class="text-10-regular uppercase tracking-[0.25em] text-text-weak group-hover:text-text-strong">
+                    {language.t("prompt.autoaccept.label")}
+                  </span>
+                  <span class="text-11-regular text-text-weak opacity-70 group-hover:text-text-strong">
+                    {autoAcceptStateLabel()}
+                  </span>
+                </Button>
+              </TooltipKeybind>
             </div>
           </div>
         </DockTray>

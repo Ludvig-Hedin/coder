@@ -18,7 +18,6 @@ import { Binary } from "@opencode-ai/util/binary"
 import { getFilename } from "@opencode-ai/util/path"
 import { Popover as KobaltePopover } from "@kobalte/core/popover"
 import { shouldMarkBoundaryGesture, normalizeWheelDelta } from "@/pages/session/message-gesture"
-import { SessionContextUsage } from "@/components/session-context-usage"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { useLanguage } from "@/context/language"
 import { useSessionKey } from "@/pages/session/session-layout"
@@ -58,9 +57,9 @@ const messageComments = (parts: Part[]): MessageComment[] =>
         comment: next.comment,
         selection: next.selection
           ? {
-              startLine: next.selection.startLine,
-              endLine: next.selection.endLine,
-            }
+            startLine: next.selection.startLine,
+            endLine: next.selection.endLine,
+          }
           : undefined,
       },
     ]
@@ -700,7 +699,7 @@ export function MessageTimeline(props: {
                           when={title.editing}
                           fallback={
                             <h1
-                              class="text-14-medium text-text-strong truncate grow-1 min-w-0"
+                              class="text-14-medium font-semibold text-text-strong truncate grow-1 min-w-0"
                               onDblClick={openTitleEditor}
                             >
                               {titleValue()}
@@ -737,7 +736,6 @@ export function MessageTimeline(props: {
                   <Show when={sessionID()}>
                     {(id) => (
                       <div class="shrink-0 flex items-center gap-3">
-                        <SessionContextUsage placement="bottom" />
                         <DropdownMenu
                           gutter={4}
                           placement="bottom-end"
