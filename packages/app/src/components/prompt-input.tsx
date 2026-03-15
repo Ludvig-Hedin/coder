@@ -318,6 +318,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
   const suggest = createMemo(() => !hasUserPrompt())
 
+  const hasText = createMemo(() => promptLength(prompt.current()) > 0)
+
   const placeholder = createMemo(() =>
     promptPlaceholder({
       mode: store.mode,
@@ -639,10 +641,30 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
 
   const createPill = (part: FileAttachmentPart | AgentPart) => {
     const pill = document.createElement("span")
-    pill.textContent = part.content
+    pill.classList.add("prompt-input__pill")
     pill.setAttribute("data-type", part.type)
     if (part.type === "file") pill.setAttribute("data-path", part.path)
     if (part.type === "agent") pill.setAttribute("data-name", part.name)
+
+    if (part.type === "file") {
+      const svgNS = "http://www.w3.org/2000/svg"
+      const icon = document.createElementNS(svgNS, "svg")
+      icon.setAttribute("viewBox", "0 0 20 20")
+      icon.setAttribute("fill", "none")
+      icon.setAttribute("aria-hidden", "true")
+      icon.innerHTML =
+        '<path d="M2.083 2.917V16.25H17.916V5.417H10L8.333 2.917H2.083Z" stroke="currentColor" stroke-linecap="round"/>'
+      icon.classList.add("prompt-input__pill-icon")
+
+      const label = document.createElement("span")
+      label.classList.add("prompt-input__pill-text")
+      label.textContent = part.content
+
+      pill.append(icon, label)
+    } else {
+      pill.textContent = part.content
+    }
+
     pill.setAttribute("contenteditable", "false")
     pill.style.userSelect = "text"
     pill.style.cursor = "default"
@@ -1318,7 +1340,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
               }}
               style={{ "padding-bottom": space }}
             />
-            <Show when={!prompt.dirty()}>
+            <Show when={!hasText()}>
               <div
                 class="absolute top-0 inset-x-0 pl-3 pr-2 pt-2 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate"
                 classList={{ "font-mono!": store.mode === "shell" }}

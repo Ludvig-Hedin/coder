@@ -39,6 +39,33 @@
     box-shadow: var(--shadow-xs-border-base);
   }
 
+  [data-component="prompt-input"] .prompt-input__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.175rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-weak-base);
+    background: var(--surface-weak);
+    color: var(--text-base);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-large);
+    margin-right: 0.35rem;
+  }
+
+  [data-component="prompt-input"] .prompt-input__pill-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  [data-component="prompt-input"] .prompt-input__pill-text {
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   [data-dock-surface="tray"][data-dock-attach="top"] {
     background-color: var(--surface-raised-stronger-non-alpha);
     backdrop-filter: blur(18px);
