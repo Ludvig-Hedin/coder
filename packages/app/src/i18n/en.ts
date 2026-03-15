@@ -531,16 +531,21 @@ export const dict = {
   "automations.title": "Automations",
   "automations.new": "New automation",
   "automations.section.paused": "Paused",
+  "automations.empty": "No automations yet.",
   "automations.status.paused": "Paused",
   "automations.dialog.titleLabel": "Automation title",
   "automations.dialog.titlePlaceholder": "Automation title",
   "automations.dialog.promptLabel": "Automation prompt",
   "automations.dialog.promptPlaceholder": "Add prompt e.g. look for crashes in $sentry",
   "automations.dialog.create": "Create",
+  "automations.dialog.expand": "Open full screen",
   "automations.dialog.template.action": "Use template",
-  "automations.dialog.template.title": "Daily stability report",
-  "automations.dialog.template.prompt":
-    "Look for crashes in $sentry, summarize open regressions, and draft a short update for the team.",
+  "automations.dialog.template.description.codeReview":
+    "Reviews changed code, scans the repo incrementally, and maintains a backlog for non-trivial work.",
+  "automations.dialog.template.description.docs":
+    "Updates project docs, task trackers, changelogs, planning docs, and the table of contents.",
+  "automations.dialog.template.description.refactor":
+    "Plans and executes incremental zero-regression file splits with strict verification after each extraction.",
 
   "session.tab.session": "Session",
   "session.tab.review": "Review",
