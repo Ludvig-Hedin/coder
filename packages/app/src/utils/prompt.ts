@@ -1,5 +1,5 @@
 import type { AgentPart as MessageAgentPart, FilePart, Part, TextPart } from "@opencode-ai/sdk/v2"
-import type { AgentPart, FileAttachmentPart, ImageAttachmentPart, Prompt } from "@/context/prompt"
+import type { AgentPart, FileAttachmentPart, ImageAttachmentPart, Prompt, SkillPart } from "@/context/prompt"
 
 type Inline =
   | {
@@ -17,6 +17,13 @@ type Inline =
     }
   | {
       type: "agent"
+      start: number
+      end: number
+      value: string
+      name: string
+    }
+  | {
+      type: "skill"
       start: number
       end: number
       value: string
@@ -173,6 +180,19 @@ export function extractPromptFromParts(parts: Part[], opts?: { directory?: strin
     position += content.length
   }
 
+  const pushSkill = (item: Extract<Inline, { type: "skill" }>) => {
+    const content = item.value
+    const skill: SkillPart = {
+      type: "skill",
+      name: item.name,
+      content,
+      start: position,
+      end: position + content.length,
+    }
+    result.push(skill)
+    position += content.length
+  }
+
   for (const item of inline) {
     if (item.start < 0 || item.end < item.start) continue
 
@@ -188,6 +208,7 @@ export function extractPromptFromParts(parts: Part[], opts?: { directory?: strin
 
     if (item.type === "file") pushFile(item)
     if (item.type === "agent") pushAgent(item)
+    if (item.type === "skill") pushSkill(item)
 
     cursor = end
   }

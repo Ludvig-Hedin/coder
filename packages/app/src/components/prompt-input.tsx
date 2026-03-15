@@ -14,6 +14,7 @@ import {
   ImageAttachmentPart,
   AgentPart,
   FileAttachmentPart,
+  SkillPart,
 } from "@/context/prompt"
 import { useLayout } from "@/context/layout"
 import { useSDK } from "@/context/sdk"
@@ -626,9 +627,26 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     return [...custom, ...builtin]
   })
 
+  const slashCommand = createMemo(() => {
+    const map = new Map<string, SlashCommand>()
+    for (const item of slashCommands()) map.set(item.trigger, item)
+    return map
+  })
+
   const handleSlashSelect = (cmd: SlashCommand | undefined) => {
     if (!cmd) return
     closePopover()
+
+    if (cmd.type === "custom" && cmd.source === "skill") {
+      addPart({
+        type: "skill",
+        name: cmd.trigger,
+        content: `/${cmd.trigger}`,
+        start: 0,
+        end: cmd.trigger.length + 1,
+      })
+      return
+    }
 
     if (cmd.type === "custom") {
       const text = `/${cmd.trigger} `
@@ -652,16 +670,17 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   } = useFilteredList<SlashCommand>({
     items: slashCommands,
     key: (x) => x?.id,
-    filterKeys: ["trigger", "title"],
+    filterKeys: ["trigger", "title", "description"],
     onSelect: handleSlashSelect,
   })
 
-  const createPill = (part: FileAttachmentPart | AgentPart) => {
+  const createPill = (part: FileAttachmentPart | AgentPart | SkillPart) => {
     const pill = document.createElement("span")
     pill.classList.add("prompt-input__pill")
     pill.setAttribute("data-type", part.type)
     if (part.type === "file") pill.setAttribute("data-path", part.path)
     if (part.type === "agent") pill.setAttribute("data-name", part.name)
+    if (part.type === "skill") pill.setAttribute("data-name", part.name)
 
     if (part.type === "file") {
       const svgNS = "http://www.w3.org/2000/svg"
@@ -678,6 +697,32 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       label.textContent = part.content
 
       pill.append(icon, label)
+    } else if (part.type === "skill") {
+      const svgNS = "http://www.w3.org/2000/svg"
+      const icon = document.createElementNS(svgNS, "svg")
+      icon.setAttribute("viewBox", "0 0 24 24")
+      icon.setAttribute("fill", "none")
+      icon.setAttribute("aria-hidden", "true")
+      icon.innerHTML =
+        '<path d="M12 3l1.9 4.1L18 9l-4.1 1.9L12 15l-1.9-4.1L6 9l4.1-1.9L12 3Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 16l.8 1.7L7.5 18.5l-1.7.8L5 21l-.8-1.7L2.5 18.5l1.7-.8L5 16Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>'
+      icon.classList.add("prompt-input__pill-icon")
+
+      const label = document.createElement("span")
+      label.classList.add("prompt-input__pill-text")
+      label.textContent = part.content
+
+      const badge = document.createElement("span")
+      badge.textContent = "skill"
+      badge.style.padding = "0.05rem 0.35rem"
+      badge.style.borderRadius = "999px"
+      badge.style.background = "color-mix(in srgb, var(--surface-panel) 84%, transparent)"
+      badge.style.color = "var(--text-weaker)"
+      badge.style.fontSize = "11px"
+      badge.style.lineHeight = "1.2"
+      badge.style.textTransform = "uppercase"
+      badge.style.letterSpacing = "0.04em"
+
+      pill.append(icon, label, badge)
     } else {
       pill.textContent = part.content
     }
@@ -704,6 +749,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       const el = node as HTMLElement
       if (el.dataset.type === "file") return true
       if (el.dataset.type === "agent") return true
+      if (el.dataset.type === "skill") return true
       return el.tagName === "BR"
     })
 
@@ -714,7 +760,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         editorRef.appendChild(createTextFragment(part.content))
         continue
       }
-      if (part.type === "file" || part.type === "agent") {
+      if (part.type === "file" || part.type === "agent" || part.type === "skill") {
         editorRef.appendChild(createPill(part))
       }
     }
@@ -819,6 +865,18 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       position += content.length
     }
 
+    const pushSkill = (skill: HTMLElement) => {
+      const content = skill.textContent ?? ""
+      parts.push({
+        type: "skill",
+        name: skill.dataset.name!,
+        content,
+        start: position,
+        end: position + content.length,
+      })
+      position += content.length
+    }
+
     const visit = (node: Node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         buffer += node.textContent ?? ""
@@ -835,6 +893,11 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       if (el.dataset.type === "agent") {
         flushText()
         pushAgent(el)
+        return
+      }
+      if (el.dataset.type === "skill") {
+        flushText()
+        pushSkill(el)
         return
       }
       if (el.tagName === "BR") {
@@ -887,6 +950,39 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     const shellMode = store.mode === "shell"
 
     if (!shellMode) {
+      const first = rawParts[0]
+      const match = first?.type === "text" ? first.content.match(/^\/([a-z0-9-]+)(?=\s|$)/) : null
+      const cmd = match?.[1] ? slashCommand().get(match[1]) : undefined
+      if (first?.type === "text" && match && cmd?.type === "custom" && cmd.source === "skill") {
+        const head = match[0]
+        const next: Prompt = [
+          {
+            type: "skill",
+            name: cmd.trigger,
+            content: head,
+            start: 0,
+            end: head.length,
+          },
+        ]
+        const tail = first.content.slice(head.length)
+        if (tail) {
+          next.push({
+            type: "text",
+            content: tail,
+            start: head.length,
+            end: first.content.length,
+          })
+        }
+        next.push(...rawParts.slice(1))
+        mirror.input = true
+        prompt.set([...next, ...images], cursorPosition)
+        closePopover()
+        queueScroll()
+        return
+      }
+    }
+
+    if (!shellMode) {
       const atMatch = rawText.substring(0, cursorPosition).match(/@(\S*)$/)
       const slashMatch = rawText.match(/^\/(\S*)$/)
 
@@ -926,7 +1022,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
     const range = selection.getRangeAt(0)
     if (!editorRef.contains(range.startContainer)) return false
 
-    if (part.type === "file" || part.type === "agent") {
+    if (part.type === "file" || part.type === "agent" || part.type === "skill") {
       const cursorPosition = getCursorPosition(editorRef)
       const rawText = prompt
         .current()
@@ -934,11 +1030,17 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         .join("")
       const textBeforeCursor = rawText.substring(0, cursorPosition)
       const atMatch = textBeforeCursor.match(/@(\S*)$/)
+      const slashMatch = textBeforeCursor.match(/^\/(\S*)$/)
       const pill = createPill(part)
       const gap = document.createTextNode(" ")
 
-      if (atMatch) {
+      if (part.type !== "skill" && atMatch) {
         const start = atMatch.index ?? cursorPosition - atMatch[0].length
+        setRangeEdge(editorRef, range, "start", start)
+        setRangeEdge(editorRef, range, "end", cursorPosition)
+      }
+      if (part.type === "skill" && slashMatch) {
+        const start = slashMatch.index ?? cursorPosition - slashMatch[0].length
         setRangeEdge(editorRef, range, "start", start)
         setRangeEdge(editorRef, range, "end", cursorPosition)
       }
