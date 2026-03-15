@@ -61,8 +61,8 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
       containerClass={store.full ? "automation-dialog__container automation-dialog__container--full" : "automation-dialog__container"}
       class="automation-dialog"
     >
-      <form class="flex h-full flex-col" onSubmit={submit}>
-        <div class="flex items-start justify-between gap-4 px-10 pb-4 pt-10">
+      <form class="automation-dialog__form" onSubmit={submit}>
+        <div class="automation-dialog__head">
           <TextField
             autofocus
             class="automation-dialog__title-input"
@@ -72,7 +72,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
             value={store.title}
             onChange={(value) => setStore("title", value)}
           />
-          <div class="flex items-center gap-3">
+          <div class="automation-dialog__actions">
             <Button
               type="button"
               size="large"
@@ -95,7 +95,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
           </div>
         </div>
 
-        <div class="flex-1 px-10 pb-6">
+        <div class="automation-dialog__body">
           <TextField
             multiline
             hideLabel
@@ -168,7 +168,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
             </Button>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div class="automation-dialog__submit">
             <Button type="button" variant="ghost" size="large" class="automation-dialog__cancel" onClick={() => dialog.close()}>
               {language.t("common.cancel")}
             </Button>

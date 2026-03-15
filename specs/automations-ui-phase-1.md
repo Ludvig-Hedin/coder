@@ -5,9 +5,10 @@ This phase adds a top-level `Automations` page and a Codex-inspired create modal
 Current scope:
 - Global `/automations` route in the existing app shell
 - Sidebar entry for `Automations`
-- Static seeded list rows for paused automations
+- Empty-state list until the user creates automations locally
 - Working `New automation` modal with editable title, prompt, and placeholder selectors
 - Local in-memory create flow that prepends a new paused automation row
+- Composer-style modal sizing and input treatment aligned with the rest of the app typography
 
 Deferred on purpose:
 - Persistent storage
