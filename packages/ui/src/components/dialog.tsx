@@ -28,7 +28,11 @@ export function Dialog(props: DialogProps) {
       data-size={props.size || "normal"}
       data-transition={props.transition ? true : undefined}
     >
-      <Kobalte open={props.open} onOpenChange={props.onOpenChange}>
+      <Kobalte
+        open={props.open}
+        defaultOpen={props.open === undefined ? true : undefined}
+        onOpenChange={props.onOpenChange}
+      >
         <div
           data-slot="dialog-container"
           classList={{
