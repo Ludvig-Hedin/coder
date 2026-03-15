@@ -33,6 +33,10 @@ type Detail =
   | { type: "template"; item: Template; added: boolean }
   | { type: "skill"; item: Skill; added: boolean }
 
+type Entry =
+  | { type: "template"; item: Template; added: boolean }
+  | { type: "skill"; item: Skill; added: boolean }
+
 const templates: Template[] = [
   {
     name: "beautiful-design",
@@ -329,6 +333,23 @@ export const SkillsManager: Component = () => {
 
   const managed = (item: Pick<Skill, "name" | "location"> | undefined) => !!item && item.location.startsWith(root())
   const installed = createMemo(() => new Set((skills() ?? []).filter(managed).map((item) => item.name)))
+  const top = createMemo(() => (skills() ?? []).filter(managed))
+  const all = createMemo<Entry[]>(() => {
+    const list: Entry[] = templates.map((item) => ({
+      type: "template",
+      item,
+      added: installed().has(item.name),
+    }))
+    for (const item of skills() ?? []) {
+      if (templates.some((template) => template.name === item.name)) continue
+      list.push({
+        type: "skill",
+        item,
+        added: managed(item),
+      })
+    }
+    return list
+  })
 
   const choose = (item?: Skill) => {
     setStore({
@@ -453,31 +474,39 @@ export const SkillsManager: Component = () => {
         <section class="flex flex-col gap-3">
           <div class="flex items-center justify-between gap-3">
             <div>
-              <h3 class="text-14-medium text-text-strong">Built-in templates</h3>
-              <p class="pt-1 text-12-regular text-text-weak">Starter templates shipped with the app.</p>
+              <h3 class="text-14-medium text-text-strong">Installed skills</h3>
+              <p class="pt-1 text-12-regular text-text-weak">Managed skills currently added to your library.</p>
             </div>
-            <div class="text-12-medium text-text-weaker">{templates.length} templates</div>
+            <div class="text-12-medium text-text-weaker">{top().length} installed</div>
           </div>
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <For each={templates}>
-              {(item) => (
-                <SkillCard
-                  title={item.title}
-                  name={item.name}
-                  category={item.category}
-                  icon={item.icon}
-                  description={item.description}
-                  preview={item.preview}
-                  added={installed().has(item.name)}
-                  saving={saving() === item.name}
-                  removing={removing() === item.name}
-                  onOpen={() => open({ type: "template", item, added: installed().has(item.name) })}
-                  onAdd={() => void addTemplate(item)}
-                  onRemove={() => void remove(item.name)}
-                />
-              )}
-            </For>
-          </div>
+          <Show
+            when={top().length > 0}
+            fallback={
+              <div class="rounded-lg border border-border-weak-base px-4 py-6 text-14-regular text-text-weak">
+                No skills added yet.
+              </div>
+            }
+          >
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <For each={top()}>
+                {(item) => (
+                  <SkillCard
+                    title={item.name}
+                    category="Installed"
+                    icon="circle-check"
+                    description={item.description}
+                    preview={item.location}
+                    added={true}
+                    saving={saving() === item.name}
+                    removing={removing() === item.name}
+                    onOpen={() => open({ type: "skill", item, added: true })}
+                    onAdd={() => void addSkill(item)}
+                    onRemove={() => void remove(item.name)}
+                  />
+                )}
+              </For>
+            </div>
+          </Show>
         </section>
 
         <section class="flex flex-col gap-3">
@@ -485,7 +514,7 @@ export const SkillsManager: Component = () => {
             <div>
               <h3 class="text-14-medium text-text-strong">All skills</h3>
               <p class="pt-1 text-12-regular text-text-weak">
-                Discovered from the app config, this project, and compatible external skill directories.
+                Browse built-in templates and discovered skills from every configured source.
               </p>
             </div>
             <Button variant="ghost" onClick={() => choose()}>
@@ -493,25 +522,36 @@ export const SkillsManager: Component = () => {
             </Button>
           </div>
           <Show
-            when={(skills() ?? []).length > 0}
-            fallback={<div class="rounded-xl border border-border-weak-base px-4 py-6 text-14-regular text-text-weak">No skills found yet.</div>}
+            when={all().length > 0}
+            fallback={
+              <div class="rounded-lg border border-border-weak-base px-4 py-6 text-14-regular text-text-weak">
+                No skills found yet.
+              </div>
+            }
           >
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              <For each={skills()}>
+              <For each={all()}>
                 {(item) => (
                   <SkillCard
-                    title={item.name}
-                    name={item.name}
-                    category={managed(item) ? "Installed" : "Available"}
-                    icon={managed(item) ? "circle-check" : "prompt"}
-                    description={item.description}
-                    preview={item.location}
-                    added={managed(item)}
-                    saving={saving() === item.name}
-                    removing={removing() === item.name}
-                    onOpen={() => open({ type: "skill", item, added: managed(item) })}
-                    onAdd={() => void addSkill(item)}
-                    onRemove={() => void remove(item.name)}
+                    title={item.type === "template" ? item.item.title : item.item.name}
+                    category={
+                      item.type === "template"
+                        ? item.added
+                          ? "Installed template"
+                          : item.item.category
+                        : item.added
+                          ? "Installed"
+                          : "Available"
+                    }
+                    icon={item.type === "template" ? item.item.icon : item.added ? "circle-check" : "prompt"}
+                    description={item.item.description}
+                    preview={item.type === "template" ? item.item.preview : item.item.location}
+                    added={item.added}
+                    saving={saving() === item.item.name}
+                    removing={removing() === item.item.name}
+                    onOpen={() => open(item)}
+                    onAdd={() => void (item.type === "template" ? addTemplate(item.item) : addSkill(item.item))}
+                    onRemove={() => void remove(item.item.name)}
                   />
                 )}
               </For>
@@ -594,7 +634,6 @@ export const SkillsManager: Component = () => {
 
 const SkillCard: Component<{
   title: string
-  name: string
   category: string
   icon: IconName
   description: string
@@ -607,14 +646,10 @@ const SkillCard: Component<{
   onRemove: () => void
 }> = (props) => {
   return (
-    <button
-      type="button"
-      class="group flex h-full flex-col rounded-xl border border-border-weak-base bg-surface-base p-4 text-left transition-colors hover:bg-surface-base-hover"
-      onClick={props.onOpen}
-    >
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex min-w-0 items-center gap-3">
-          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-panel text-icon-base">
+    <div class="group flex h-full flex-col rounded-lg border border-border-weak-base bg-surface-base p-4 transition-colors hover:bg-surface-base-hover">
+      <button type="button" class="flex flex-1 flex-col text-left" onClick={props.onOpen}>
+        <div class="flex items-start gap-3">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface-panel text-icon-base">
             <Icon name={props.icon} size="small" />
           </div>
           <div class="min-w-0">
@@ -622,7 +657,11 @@ const SkillCard: Component<{
             <div class="truncate text-14-medium text-text-strong">{props.title}</div>
           </div>
         </div>
-        <div class="shrink-0" onClick={(event) => event.stopPropagation()}>
+        <p class="pt-3 line-clamp-2 text-13-regular text-text-weak">{brief(props.description, 78)}</p>
+        <p class="pt-2 line-clamp-2 break-all text-12-regular text-text-weaker">{brief(props.preview, 92)}</p>
+      </button>
+      <div class="flex items-center gap-2 pt-4">
+        <div class="shrink-0">
           <Show
             when={props.added}
             fallback={
@@ -636,11 +675,11 @@ const SkillCard: Component<{
             </Button>
           </Show>
         </div>
+        <Button size="small" variant="ghost" onClick={props.onOpen}>
+          Read more
+        </Button>
       </div>
-      <p class="pt-3 text-13-regular text-text-weak">{props.description}</p>
-      <p class="pt-2 line-clamp-3 break-all text-12-regular text-text-weaker">{props.preview}</p>
-      <div class="pt-4 text-12-medium text-text-weak">Click to read more</div>
-    </button>
+    </div>
   )
 }
 
@@ -725,4 +764,10 @@ const DialogSkill: Component<{
       </div>
     </Dialog>
   )
+}
+
+function brief(text: string, max: number) {
+  const value = text.replace(/\s+/g, " ").trim()
+  if (value.length <= max) return value
+  return `${value.slice(0, max).trimEnd()}...`
 }

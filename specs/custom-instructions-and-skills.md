@@ -17,7 +17,7 @@
 - Settings now includes a `Skills` tab.
 - The sidebar `Skills` link opens the dedicated Skills page.
 - Settings `Skills` is now configuration-focused rather than a duplicate skill library.
-- The dedicated Skills page shows built-in templates and discovered skills as cards, opens a detail modal on click, and exposes inline add/remove actions without forcing the modal open.
+- The dedicated Skills page shows installed skills first, merges built-in templates into the full skills library, opens a detail modal on click, and exposes inline add/remove actions without forcing the modal open.
 - Built-in skill templates are shown as category cards with clearer preview copy.
 - Managed skills are written to `~/.config/opencode/skills/<name>/SKILL.md`.
 - Global custom instructions are written to `~/.config/opencode/AGENTS.md`.
