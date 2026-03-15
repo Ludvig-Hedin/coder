@@ -10,6 +10,7 @@
     "dev:backend:isolated": "XDG_DATA_HOME=$PWD/.devstate/xdg-data XDG_CONFIG_HOME=$PWD/.devstate/xdg-config XDG_STATE_HOME=$PWD/.devstate/xdg-state XDG_CACHE_HOME=$PWD/.devstate/xdg-cache bun run --cwd packages/opencode --conditions=browser src/index.ts serve --port 4096",
     "dev:web:isolated": "VITE_OPENCODE_SERVER_HOST=127.0.0.1 VITE_OPENCODE_SERVER_PORT=4096 bun --cwd packages/app dev",
     "all": "sh -c 'bun run dev:backend:isolated & bun run dev:web:isolated; wait'",
+    "kill": "sh -c 'pkill -f \"src/index.ts serve --port 4096\" >/dev/null 2>&1; pkill -f \"bun --cwd packages/app dev\" >/dev/null 2>&1'",
     "dev:desktop": "bun --cwd packages/desktop tauri dev",
     "dev:web": "bun --cwd packages/app dev",
     "dev:storybook": "bun --cwd packages/storybook storybook",

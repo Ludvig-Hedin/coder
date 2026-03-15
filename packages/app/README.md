@@ -75,3 +75,5 @@ bun run dev:web:isolated
 That starts the Vite frontend and points it at the isolated backend on port `4096`.
 
 To launch both services from a single command, run `bun run all` from the repo root; it shells out to `dev:backend:isolated` and `dev:web:isolated` concurrently so you still get a single stop/ctrl+C.
+
+To tear both servers down you can use `bun run kill`, which tries to kill the backend (`src/index.ts serve --port 4096`) and the Vite process in one shot.
