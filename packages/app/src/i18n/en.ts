@@ -560,6 +560,7 @@ export const dict = {
   "session.followupDock.summary.other": "{{count}} queued messages",
   "session.followupDock.sendNow": "Send now",
   "session.followupDock.edit": "Edit",
+  "session.followupDock.delete": "Delete queued message",
   "session.followupDock.collapse": "Collapse queued messages",
   "session.followupDock.expand": "Expand queued messages",
   "session.revertDock.summary.one": "{{count}} rolled back message",

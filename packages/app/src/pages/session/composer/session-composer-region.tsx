@@ -31,6 +31,8 @@ export function SessionComposerRegion(props: {
     onQueue: (draft: FollowupDraft) => void
     onAbort: () => void
     onSend: (id: string) => void
+    onDelete: (id: string) => void
+    onMove: (id: string, to: number) => void
     onEdit: (id: string) => void
     onEditLoaded: () => void
   }
@@ -232,6 +234,8 @@ export function SessionComposerRegion(props: {
                   items={props.followup!.items}
                   sending={props.followup!.sending}
                   onSend={props.followup!.onSend}
+                  onDelete={props.followup!.onDelete}
+                  onMove={props.followup!.onMove}
                   onEdit={props.followup!.onEdit}
                 />
               </Show>
