@@ -31,6 +31,10 @@ type Row = {
   mode: "open" | "browse"
 }
 
+function hidden(input: string) {
+  return getFilename(trimTrailing(input)).startsWith(".")
+}
+
 function cleanInput(value: string) {
   const first = (value ?? "").split(/\r?\n/)[0] ?? ""
   return first.replace(/[\u0000-\u001F\u007F]/g, "").trim()
@@ -178,6 +182,7 @@ function useDirectoryBrowser(args: {
       .then((nodes) =>
         nodes
           .filter((n) => n.type === "directory")
+          .filter((n) => !n.name.startsWith("."))
           .map((n) => ({
             name: n.name,
             absolute: trimTrailing(normalizeDriveRoot(n.absolute)),
@@ -225,7 +230,10 @@ function useDirectoryBrowser(args: {
       if (!isPath) {
         const results = await find()
         if (!active()) return []
-        return results.map((rel) => joinPath(scopedInput.directory, rel)).slice(0, 50)
+        return results
+          .map((rel) => joinPath(scopedInput.directory, rel))
+          .filter((item) => !hidden(item))
+          .slice(0, 50)
       }
 
       const segments = query.replace(/^\/+/, "").split("/")
@@ -250,7 +258,7 @@ function useDirectoryBrowser(args: {
 
       const out = (await Promise.all(paths.map((p) => match(p, tail, 50)))).flat()
       if (!active()) return []
-      const deduped = Array.from(new Set(out))
+      const deduped = Array.from(new Set(out)).filter((item) => !hidden(item))
       const base = raw.startsWith("~") ? trimTrailing(scopedInput.directory) : ""
       const expand = !raw.endsWith("/")
       if (!expand || !tail) {
@@ -322,6 +330,10 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   const title = createMemo(() => props.title ?? language.t("command.project.open"))
   const currentLabel = createMemo(() => displayPath(current(), "", home()))
   const canPickNative = createMemo(() => !!platform.openDirectoryPickerDialog && server.isLocal())
+  const help = createMemo(() => {
+    if (canPickNative()) return "Browse below, or use File explorer for the system picker."
+    return "Click a folder to enter it. Use Open to select the current folder."
+  })
 
   const recentProjects = createMemo(() => {
     const projects = layout.projects.list()
@@ -367,12 +379,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
     const query = cleanInput(value)
     if (!query) {
       const dir = current()
-      const rows = dir
-        ? [
-            toRow(dir, home(), "browser", "open"),
-            ...(await browser.list(dir)).map((absolute) => toRow(absolute, home(), "browser", "browse")),
-          ]
-        : []
+      const rows = dir ? (await browser.list(dir)).map((absolute) => toRow(absolute, home(), "browser", "browse")) : []
       return uniqueRows([...rows, ...recentProjects()])
     }
 
@@ -434,10 +441,14 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
   return (
     <Dialog
       title={title()}
+      class="w-full max-w-[960px] mx-auto"
       description={
-        <div class="min-w-0 flex items-center gap-2 text-12-regular text-text-weak">
-          <Icon name="folder" size="small" />
-          <span class="truncate">{currentLabel() || "~"}</span>
+        <div class="min-w-0 flex flex-col gap-1 text-12-regular text-text-weak">
+          <div class="min-w-0 flex items-center gap-2">
+            <Icon name="folder" size="small" />
+            <span class="truncate">{currentLabel() || "~"}</span>
+          </div>
+          <span>{help()}</span>
         </div>
       }
       action={
@@ -485,7 +496,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
         </div>
       }
     >
-      <div class="flex flex-col gap-3">
+      <div class="flex h-[70vh] min-h-0 flex-col gap-3">
         <Show when={store.creating}>
           <form
             class="px-1 flex items-end gap-2"
@@ -499,7 +510,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
               class="flex-1"
               label="Folder name"
               hideLabel
-              placeholder="Folder name"
+              placeholder="New folder name"
               value={store.name}
               onChange={(value) => setStore("name", value)}
             />
@@ -509,6 +520,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
           </form>
         </Show>
         <List
+          class="flex-1 min-h-0 [&_[data-slot=list-scroll]]:flex-1 [&_[data-slot=list-scroll]]:min-h-0"
           search={{ placeholder: language.t("dialog.directory.search.placeholder"), autofocus: !store.creating }}
           emptyMessage={language.t("dialog.directory.empty")}
           loadingMessage={language.t("common.loading")}
@@ -521,7 +533,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
             return order.indexOf(a.category) - order.indexOf(b.category)
           }}
           groupHeader={(group) => {
-            if (group.category === "browser") return "Folders here"
+            if (group.category === "browser") return "Folders in current location"
             if (group.category === "recent") return language.t("home.recentProjects")
             return "Search results"
           }}
@@ -551,32 +563,13 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
           {(item) => {
             const path = displayPath(item.absolute, filter(), home())
             const open = item.mode === "open"
-            if (path === "~") {
-              return (
-                <div class="w-full flex items-center justify-between rounded-md">
-                  <div class="flex items-center gap-x-3 grow min-w-0">
-                    <FileIcon node={{ path: item.absolute, type: "directory" }} class="shrink-0 size-4" />
-                    <div class="flex items-center text-14-regular min-w-0">
-                      <span class="text-text-strong whitespace-nowrap">~</span>
-                      <span class="text-text-weak whitespace-nowrap">/</span>
-                    </div>
-                  </div>
-                  <Show when={!open}>
-                    <Icon name="chevron-right" size="small" class="text-text-weaker" />
-                  </Show>
-                </div>
-              )
-            }
             return (
               <div class="w-full flex items-center justify-between rounded-md">
                 <div class="flex items-center gap-x-3 grow min-w-0">
                   <FileIcon node={{ path: item.absolute, type: "directory" }} class="shrink-0 size-4" />
-                  <div class="flex items-center text-14-regular min-w-0">
-                    <span class="text-text-weak whitespace-nowrap overflow-hidden overflow-ellipsis truncate min-w-0">
-                      {getDirectory(path)}
-                    </span>
-                    <span class="text-text-strong whitespace-nowrap">{getFilename(path)}</span>
-                    <span class="text-text-weak whitespace-nowrap">/</span>
+                  <div class="min-w-0 flex flex-col text-left">
+                    <span class="truncate text-14-regular text-text-strong">{getFilename(path)}</span>
+                    <span class="truncate text-12-regular text-text-weak">{getDirectory(path) || path}</span>
                   </div>
                 </div>
                 <Show when={!open}>
