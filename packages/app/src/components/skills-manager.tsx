@@ -5,11 +5,9 @@ import { Icon, type IconName } from "@opencode-ai/ui/icon"
 import { TextField } from "@opencode-ai/ui/text-field"
 import { showToast } from "@opencode-ai/ui/toast"
 import { createMemo, createResource, createSignal, For, type Component, Show } from "solid-js"
-import { createStore } from "solid-js/store"
 import { useGlobalSDK } from "@/context/global-sdk"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLanguage } from "@/context/language"
-import { usePlatform } from "@/context/platform"
 import { SettingsList } from "./settings-list"
 
 type Skill = {
@@ -311,15 +309,9 @@ export const SkillsManager: Component = () => {
   const sdk = useGlobalSDK()
   const sync = useGlobalSync()
   const language = useLanguage()
-  const platform = usePlatform()
   const [saving, setSaving] = createSignal<string>()
   const [removing, setRemoving] = createSignal<string>()
-  const [store, setStore] = createStore({
-    name: "",
-    description: "",
-    content: "",
-    location: "",
-  })
+  const [raw, setRaw] = createSignal("")
 
   const root = createMemo(() => {
     const dir = sync.data.path.config
@@ -351,15 +343,6 @@ export const SkillsManager: Component = () => {
     return list
   })
 
-  const choose = (item?: Skill) => {
-    setStore({
-      name: item?.name ?? "",
-      description: item?.description ?? "",
-      content: item?.content ?? "",
-      location: item?.location ?? "",
-    })
-  }
-
   const notify = (message: string) => {
     showToast({ title: language.t("common.requestFailed"), description: message })
   }
@@ -376,8 +359,6 @@ export const SkillsManager: Component = () => {
         { throwOnError: true },
       )
       .then(async (result) => {
-        const item = result.data
-        if (item) choose(item)
         showToast({
           variant: "success",
           icon: "circle-check",
@@ -398,7 +379,6 @@ export const SkillsManager: Component = () => {
     await sdk.client.app
       .deleteSkill({ name }, { throwOnError: true })
       .then(async () => {
-        if (store.name === name) choose()
         showToast({
           variant: "success",
           icon: "circle-check",
@@ -434,6 +414,36 @@ export const SkillsManager: Component = () => {
       "The skill was added to your managed library.",
     )
 
+  const parse = (input: string) => {
+    const text = input.trim()
+    const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+    if (!match) throw new Error("Expected pasted SKILL.md content with YAML frontmatter.")
+    const data = match[1]
+    const body = match[2]?.trim() ?? ""
+    const name = data.match(/(?:^|\n)name:\s*(.+)\s*$/)?.[1]?.trim()
+    const description = data.match(/(?:^|\n)description:\s*(.+)\s*$/)?.[1]?.trim()
+    if (!name || !description) throw new Error("Frontmatter must include both name and description.")
+    return {
+      name: name.replace(/^['"]|['"]$/g, ""),
+      description: description.replace(/^['"]|['"]$/g, ""),
+      content: body,
+    }
+  }
+
+  const format = (input: { name: string; description: string; content: string }) =>
+    ["---", `name: ${input.name}`, `description: ${input.description}`, "---", "", input.content.trim(), ""].join("\n")
+
+  const importSkill = async () => {
+    try {
+      const skill = parse(raw())
+      await save(skill, "The imported skill was added to your managed library.")
+      setRaw("")
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      notify(message)
+    }
+  }
+
   const open = (detail: Detail) => {
     dialog.show(() => (
       <DialogSkill
@@ -442,15 +452,7 @@ export const SkillsManager: Component = () => {
         onAdd={() => (detail.type === "template" ? addTemplate(detail.item) : addSkill(detail.item))}
         onRemove={() => remove(detail.item.name)}
         onEdit={() => {
-          if (detail.type === "skill") choose(detail.item)
-          if (detail.type === "template") {
-            setStore({
-              name: detail.item.name,
-              description: detail.item.description,
-              content: detail.item.content,
-              location: "",
-            })
-          }
+          setRaw(format(detail.item))
           dialog.close()
         }}
         saving={saving}
@@ -517,9 +519,6 @@ export const SkillsManager: Component = () => {
                 Browse built-in templates and discovered skills from every configured source.
               </p>
             </div>
-            <Button variant="ghost" onClick={() => choose()}>
-              New custom skill
-            </Button>
           </div>
           <Show
             when={all().length > 0}
@@ -560,66 +559,21 @@ export const SkillsManager: Component = () => {
         </section>
 
         <section class="flex flex-col gap-1">
-          <h3 class="text-14-medium text-text-strong pb-2">Custom skill editor</h3>
+          <h3 class="text-14-medium text-text-strong pb-2">Skill importer</h3>
           <SettingsList>
             <div class="flex flex-col gap-4 py-4">
               <TextField
-                label="Name"
-                value={store.name}
-                onChange={(value) => setStore("name", value)}
-                description="Lowercase letters, numbers, and single hyphens only."
-              />
-              <TextField
-                label="Description"
-                value={store.description}
-                onChange={(value) => setStore("description", value)}
-              />
-              <TextField
-                label="Content"
+                label="Paste SKILL.md"
                 multiline
-                value={store.content}
-                onChange={(value) => setStore("content", value)}
-                description="Markdown body written after the YAML frontmatter."
+                value={raw()}
+                onChange={setRaw}
+                description="Paste a complete SKILL.md file with frontmatter to import it as a managed skill."
                 class="min-h-64"
               />
-              <TextField
-                label="Current file"
-                value={store.location || (store.name ? `${root()}/${store.name}/SKILL.md` : "")}
-                readOnly
-                copyable
-              />
-              <Show when={store.location && !store.location.startsWith(root())}>
-                <p class="text-12-regular text-text-weak">
-                  This source skill is read-only here. Saving creates or updates your managed copy in the global config
-                  directory.
-                </p>
-              </Show>
               <div class="flex flex-wrap gap-3">
-                <Button
-                  onClick={() =>
-                    void save(
-                      {
-                        name: store.name,
-                        description: store.description,
-                        content: store.content,
-                      },
-                      "The managed skill file has been updated.",
-                    )
-                  }
-                  loading={saving() === store.name}
-                >
-                  Save skill
+                <Button onClick={() => void importSkill()} disabled={!raw().trim()}>
+                  Import skill
                 </Button>
-                <Show when={managed({ name: store.name, location: store.location })}>
-                  <Button variant="ghost" onClick={() => void remove(store.name)} loading={removing() === store.name}>
-                    Remove managed copy
-                  </Button>
-                </Show>
-                <Show when={platform.openPath && (store.location || root())}>
-                  <Button variant="ghost" onClick={() => void platform.openPath?.(store.location || root())}>
-                    Open path
-                  </Button>
-                </Show>
                 <Button variant="ghost" onClick={() => void actions.refetch()}>
                   Reload list
                 </Button>
@@ -648,8 +602,8 @@ const SkillCard: Component<{
   return (
     <div class="group flex h-full flex-col rounded-lg border border-border-weak-base bg-surface-base p-4 transition-colors hover:bg-surface-base-hover">
       <button type="button" class="flex flex-1 flex-col text-left" onClick={props.onOpen}>
-        <div class="flex items-start gap-3">
-          <div class="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface-panel text-icon-base">
+        <div class="flex items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-xs bg-background-base/30 text-icon-base border border-border-weak-base">
             <Icon name={props.icon} size="small" />
           </div>
           <div class="min-w-0">
@@ -776,7 +730,7 @@ const DialogSkill: Component<{
               </Button>
             </Show>
             <Button size="small" variant="secondary" onClick={props.onEdit}>
-              {added() ? "Edit managed copy" : "Open in editor"}
+              {added() ? "Edit in importer" : "Copy to importer"}
             </Button>
             <Button size="small" variant="ghost" onClick={() => dialog.close()}>
               Close
