@@ -89,7 +89,7 @@ import {
   type WorkspaceSidebarContext,
 } from "./layout/sidebar-workspace"
 import { ProjectDragOverlay, SortableProject, type ProjectSidebarContext } from "./layout/sidebar-project"
-import { SidebarContent } from "./layout/sidebar-shell"
+import { SidebarThreadList } from "./layout/sidebar-thread-list"
 
 export default function Layout(props: ParentProps) {
   const [store, setStore, , ready] = persisted(
@@ -1739,7 +1739,7 @@ export default function Layout(props: ParentProps) {
   )
 
   createEffect(() => {
-    const sidebarWidth = layout.sidebar.opened() ? layout.sidebar.width() : 48
+    const sidebarWidth = layout.sidebar.opened() ? Math.max(layout.sidebar.width(), 280) : 0
     document.documentElement.style.setProperty("--dialog-left-margin", `${sidebarWidth}px`)
   })
 
@@ -2236,38 +2236,99 @@ export default function Layout(props: ParentProps) {
     )
   }
 
-  const projects = () => layout.projects.list()
-  const projectOverlay = () => <ProjectDragOverlay projects={projects} activeProject={() => store.activeProject} />
+  const projects = createMemo(() => {
+    const open = new Map(layout.projects.list().map((project) => [project.worktree, project]))
+    const list = globalSync.data.project
+      .slice()
+      .sort((a, b) => (b.time.updated ?? b.time.created) - (a.time.updated ?? a.time.created))
+      .map((project) => {
+        const item = open.get(project.worktree)
+        return {
+          ...project,
+          ...item,
+          worktree: project.worktree,
+          expanded: item?.expanded ?? false,
+        } satisfies LocalProject
+      })
+
+    const current = currentProject()
+    if (!current) return list
+    if (list.some((project) => project.worktree === current.worktree)) return list
+    return [current, ...list]
+  })
+  const sidebarMin = 280
+  const sidebarWidth = createMemo(() => Math.max(layout.sidebar.width(), sidebarMin))
+  const threadDirs = createMemo(() => {
+    const current = currentDir()
+    const seen = new Set<string>()
+    return projects().flatMap((project) => {
+      const dirs = workspaceIds(project)
+      const expanded = project.expanded || project.worktree === current || project.sandboxes?.includes(current) === true
+      return (expanded ? dirs : dirs.slice(0, 1)).flatMap((directory) => {
+        if (seen.has(directory)) return []
+        seen.add(directory)
+        return [directory]
+      })
+    })
+  })
+  const projectSessions = (directory: string) => {
+    const [dirStore] = globalSync.child(directory, { bootstrap: true })
+    return sortedRootSessions(dirStore, Date.now())
+  }
+  createEffect(() => {
+    for (const directory of threadDirs()) {
+      void globalSync.project.loadSessions(directory)
+    }
+  })
+  const toggleProjectList = (project: LocalProject) => {
+    layout.projects.open(project.worktree)
+    const expanded = projects().find((item) => item.worktree === project.worktree)?.expanded ?? false
+    if (expanded) {
+      server.projects.collapse(project.worktree)
+      return
+    }
+    server.projects.expand(project.worktree)
+  }
+  const selectProjectList = (project: LocalProject) => {
+    layout.projects.open(project.worktree)
+    server.projects.expand(project.worktree)
+    navigateWithSidebarReset(`/${base64Encode(project.worktree)}/session`)
+  }
+  const openProjectThread = (project: LocalProject) => {
+    layout.projects.open(project.worktree)
+    server.projects.expand(project.worktree)
+    navigateWithSidebarReset(`/${base64Encode(project.worktree)}/session`)
+  }
+  const openNewThread = () => {
+    if (params.dir) {
+      navigateWithSidebarReset(`/${params.dir}/session`)
+      return
+    }
+
+    const project = currentProject() ?? projects()[0]
+    if (project) {
+      navigateWithSidebarReset(`/${base64Encode(project.worktree)}/session`)
+      return
+    }
+
+    void chooseProject()
+  }
   const sidebarContent = (mobile?: boolean) => (
-    <SidebarContent
+    <SidebarThreadList
       mobile={mobile}
-      opened={() => layout.sidebar.opened()}
-      aimMove={aim.move}
       projects={projects}
-      renderProject={(project) => (
-        <SortableProject ctx={projectSidebarCtx} project={project} sortNow={sortNow} mobile={mobile} />
-      )}
-      handleDragStart={handleDragStart}
-      handleDragEnd={handleDragEnd}
-      handleDragOver={handleDragOver}
-      openProjectLabel={language.t("command.project.open")}
-      openProjectKeybind={() => command.keybind("project.open")}
-      onOpenProject={chooseProject}
-      renderProjectOverlay={projectOverlay}
-      settingsLabel={() => language.t("sidebar.settings")}
-      settingsKeybind={() => command.keybind("settings.open")}
+      currentDir={currentDir}
+      currentSession={() => params.id}
+      workspaces={workspaceIds}
+      sessions={projectSessions}
+      expanded={(project) => projects().find((item) => item.worktree === project.worktree)?.expanded ?? false}
+      onSelectProject={selectProjectList}
+      onToggleProject={toggleProjectList}
+      onNewProject={openProjectThread}
+      onArchive={(session) => void archiveSession(session)}
+      onNew={openNewThread}
+      onOpenProject={() => void chooseProject()}
       onOpenSettings={openSettings}
-      helpLabel={() => language.t("sidebar.help")}
-      onOpenHelp={() => platform.openLink("https://opencode.ai/desktop-feedback")}
-      renderPanel={() =>
-        mobile ? (
-          <SidebarPanel project={currentProject} mobile />
-        ) : (
-          <Show when={currentProject()}>
-            <SidebarPanel project={currentProject} merged />
-          </Show>
-        )
-      }
     />
   )
 
@@ -2285,45 +2346,32 @@ export default function Layout(props: ParentProps) {
                 "absolute inset-y-0 left-0": true,
                 "z-10": true,
               }}
-              style={{ width: `${Math.max(layout.sidebar.width(), 244)}px` }}
+              style={{ width: layout.sidebar.opened() ? `${sidebarWidth()}px` : "0px" }}
               ref={(el) => {
                 setState("nav", el)
               }}
-              onMouseEnter={() => {
-                disarm()
-              }}
-              onMouseLeave={() => {
-                aim.reset()
-                if (!sidebarHovering()) return
-
-                arm()
-              }}
             >
-              <div class="@container w-full h-full contain-strict">{sidebarContent()}</div>
               <Show when={layout.sidebar.opened()}>
-                <div onPointerDown={() => setState("sizing", true)}>
-                  <ResizeHandle
-                    direction="horizontal"
-                    size={layout.sidebar.width()}
-                    min={244}
-                    max={typeof window === "undefined" ? 1000 : window.innerWidth * 0.3 + 64}
-                    collapseThreshold={244}
-                    onResize={(w) => {
-                      setState("sizing", true)
-                      if (sizet !== undefined) clearTimeout(sizet)
-                      sizet = window.setTimeout(() => setState("sizing", false), 120)
-                      layout.sidebar.resize(w)
-                    }}
-                    onCollapse={layout.sidebar.close}
-                  />
+                <div class="@container h-full w-full contain-strict border-r border-border-weaker-base relative">
+                  {sidebarContent()}
+                  <div onPointerDown={() => setState("sizing", true)}>
+                    <ResizeHandle
+                      direction="horizontal"
+                      size={sidebarWidth()}
+                      min={sidebarMin}
+                      max={typeof window === "undefined" ? 560 : Math.max(window.innerWidth * 0.42, sidebarMin)}
+                      collapseThreshold={sidebarMin}
+                      onResize={(width) => {
+                        setState("sizing", true)
+                        if (sizet !== undefined) clearTimeout(sizet)
+                        sizet = window.setTimeout(() => setState("sizing", false), 120)
+                        layout.sidebar.resize(width)
+                      }}
+                    />
+                  </div>
                 </div>
               </Show>
             </nav>
-
-            <div
-              class="hidden xl:block pointer-events-none absolute top-0 right-0 z-0 border-t border-border-weaker-base"
-              style={{ left: "calc(4rem + 12px)" }}
-            />
 
             <div class="xl:hidden">
               <div
@@ -2340,7 +2388,7 @@ export default function Layout(props: ParentProps) {
                 aria-label={language.t("sidebar.nav.projectsAndSessions")}
                 data-component="sidebar-nav-mobile"
                 classList={{
-                  "@container fixed top-10 bottom-0 left-0 z-50 w-full max-w-[400px] overflow-hidden border-r border-border-weaker-base bg-background-base transition-transform duration-200 ease-out": true,
+                  "@container fixed top-10 bottom-0 left-0 z-50 w-full max-w-[360px] overflow-hidden border-r border-border-weaker-base bg-background-base transition-transform duration-200 ease-out": true,
                   "translate-x-0": layout.mobileSidebar.opened(),
                   "-translate-x-full": !layout.mobileSidebar.opened(),
                 }}
@@ -2355,60 +2403,22 @@ export default function Layout(props: ParentProps) {
                 "absolute inset-0": true,
                 "xl:inset-y-0 xl:right-0 xl:left-[var(--main-left)]": true,
                 "z-20": true,
-                "transition-[left] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[left] motion-reduce:transition-none":
-                  !state.sizing,
+                "transition-[left] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[left] motion-reduce:transition-none": true,
               }}
               style={{
-                "--main-left": layout.sidebar.opened() ? `${Math.max(layout.sidebar.width(), 244)}px` : "4rem",
+                "--main-left": layout.sidebar.opened() ? `${sidebarWidth()}px` : "0px",
               }}
             >
               <main
                 classList={{
-                  "size-full overflow-x-hidden flex flex-col items-start contain-strict border-t border-border-weak-base bg-background-base xl:border-l xl:rounded-tl-[12px]": true,
+                  "size-full overflow-x-hidden flex flex-col items-start contain-strict border-t border-border-weak-base bg-background-base": true,
+                  "xl:border-l xl:rounded-tl-[12px]": !layout.sidebar.opened(),
                 }}
               >
                 <Show when={!autoselecting()} fallback={<div class="size-full" />}>
                   {props.children}
                 </Show>
               </main>
-            </div>
-
-            <div
-              classList={{
-                "hidden xl:flex absolute inset-y-0 left-16 z-30": true,
-                "opacity-100 translate-x-0 pointer-events-auto": state.peeked && !layout.sidebar.opened(),
-                "opacity-0 -translate-x-2 pointer-events-none": !state.peeked || layout.sidebar.opened(),
-                "transition-[opacity,transform] motion-reduce:transition-none": true,
-                "duration-180 ease-out": state.peeked && !layout.sidebar.opened(),
-                "duration-120 ease-in": !state.peeked || layout.sidebar.opened(),
-              }}
-              onMouseMove={disarm}
-              onMouseEnter={() => {
-                disarm()
-                aim.reset()
-              }}
-              onPointerDown={disarm}
-              onMouseLeave={() => {
-                arm()
-              }}
-            >
-              <Show when={peekProject()}>
-                <SidebarPanel project={peekProject} merged={false} />
-              </Show>
-            </div>
-
-            <div
-              classList={{
-                "hidden xl:block pointer-events-none absolute inset-y-0 right-0 z-25 overflow-hidden": true,
-                "opacity-100 translate-x-0": state.peeked && !layout.sidebar.opened(),
-                "opacity-0 -translate-x-2": !state.peeked || layout.sidebar.opened(),
-                "transition-[opacity,transform] motion-reduce:transition-none": true,
-                "duration-180 ease-out": state.peeked && !layout.sidebar.opened(),
-                "duration-120 ease-in": !state.peeked || layout.sidebar.opened(),
-              }}
-              style={{ left: `calc(4rem + ${Math.max(Math.max(layout.sidebar.width(), 244) - 64, 0)}px)` }}
-            >
-              <div class="h-full w-px" style={{ "box-shadow": "var(--shadow-sidebar-overlay)" }} />
             </div>
           </div>
         </div>
