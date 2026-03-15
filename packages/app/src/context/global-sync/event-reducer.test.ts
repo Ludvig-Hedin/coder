@@ -511,8 +511,8 @@ describe("applyDirectoryEvent", () => {
       },
     })
 
-    expect(store.vcs).toEqual({ branch: "feature/test" })
-    expect(cacheStore.value).toEqual({ branch: "feature/test" })
+    expect(store.vcs).toMatchObject({ branch: "feature/test" })
+    expect(cacheStore.value).toMatchObject({ branch: "feature/test" })
   })
 
   test("routes disposal and lsp events to side-effect handlers", () => {

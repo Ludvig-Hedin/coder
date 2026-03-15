@@ -1858,7 +1858,9 @@ export type Path = {
 }
 
 export type VcsInfo = {
-  branch: string
+  branch?: string
+  remote?: string
+  gh: boolean
 }
 
 export type Command = {
@@ -4926,6 +4928,98 @@ export type AppSkillsResponses = {
 }
 
 export type AppSkillsResponse = AppSkillsResponses[keyof AppSkillsResponses]
+
+export type AppSaveSkillData = {
+  body?: {
+    name: string
+    description: string
+    content: string
+  }
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/skill"
+}
+
+export type AppSaveSkillErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type AppSaveSkillError = AppSaveSkillErrors[keyof AppSaveSkillErrors]
+
+export type AppSaveSkillResponses = {
+  /**
+   * Saved skill
+   */
+  200: {
+    name: string
+    description: string
+    location: string
+    content: string
+  }
+}
+
+export type AppSaveSkillResponse = AppSaveSkillResponses[keyof AppSaveSkillResponses]
+
+export type AppInstructionsData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/instruction"
+}
+
+export type AppInstructionsResponses = {
+  /**
+   * Instructions file
+   */
+  200: {
+    path: string
+    content: string
+  }
+}
+
+export type AppInstructionsResponse = AppInstructionsResponses[keyof AppInstructionsResponses]
+
+export type AppSaveInstructionsData = {
+  body?: {
+    content: string
+  }
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/instruction"
+}
+
+export type AppSaveInstructionsErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type AppSaveInstructionsError = AppSaveInstructionsErrors[keyof AppSaveInstructionsErrors]
+
+export type AppSaveInstructionsResponses = {
+  /**
+   * Saved instructions file
+   */
+  200: {
+    path: string
+    content: string
+  }
+}
+
+export type AppSaveInstructionsResponse = AppSaveInstructionsResponses[keyof AppSaveInstructionsResponses]
 
 export type LspStatusData = {
   body?: never

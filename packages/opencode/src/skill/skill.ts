@@ -19,6 +19,7 @@ import { PermissionNext } from "@/permission/next"
 
 export namespace Skill {
   const log = Log.create({ service: "skill" })
+  const NAME_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/
   export const Info = z.object({
     name: z.string(),
     description: z.string(),
@@ -26,6 +27,16 @@ export namespace Skill {
     content: z.string(),
   })
   export type Info = z.infer<typeof Info>
+  export const Draft = z.object({
+    name: z
+      .string()
+      .min(1)
+      .max(64)
+      .regex(NAME_REGEX),
+    description: z.string().min(1).max(1024),
+    content: z.string(),
+  })
+  export type Draft = z.infer<typeof Draft>
 
   export const InvalidError = NamedError.create(
     "SkillInvalidError",
@@ -188,6 +199,38 @@ export namespace Skill {
 
   export async function dirs() {
     return state().then((x) => x.dirs)
+  }
+
+  export function managedDir() {
+    return path.join(Global.Path.config, "skills")
+  }
+
+  export function managedPath(name: string) {
+    return path.join(managedDir(), name, "SKILL.md")
+  }
+
+  function serialize(input: Draft) {
+    return [
+      "---",
+      `name: ${input.name}`,
+      `description: ${input.description}`,
+      "---",
+      "",
+      input.content.trim(),
+      "",
+    ].join("\n")
+  }
+
+  export async function save(input: Draft) {
+    const skill = Draft.parse(input)
+    const filepath = managedPath(skill.name)
+    await Filesystem.write(filepath, serialize(skill))
+    return {
+      name: skill.name,
+      description: skill.description,
+      location: filepath,
+      content: skill.content.trim(),
+    }
   }
 
   export async function available(agent?: Agent.Info) {

@@ -46,12 +46,37 @@ import { PermissionRoutes } from "./routes/permission"
 import { GlobalRoutes } from "./routes/global"
 import { MDNS } from "./mdns"
 import { lazy } from "@/util/lazy"
+import path from "path"
+import { GlobalBus } from "@/bus/global"
+import { Event } from "./event"
 
 // @ts-ignore This global is needed to prevent ai-sdk from logging warnings to stdout https://github.com/vercel/ai/blob/2dc67e0ef538307f21368db32d5a12345d98831b/packages/ai/src/logger/log-warnings.ts#L85
 globalThis.AI_SDK_LOG_WARNINGS = false
 
 export namespace Server {
   const log = Log.create({ service: "server" })
+
+  export function authorized(
+    input: {
+      header(name: string): string | undefined
+      query(name: string): string | undefined
+    },
+    username: string,
+    password: string,
+  ) {
+    const auth = input.header("Authorization") ?? input.header("authorization")
+    const expected = `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`
+    if (auth === expected) return true
+
+    // Browsers cannot attach Authorization headers to WebSocket upgrades.
+    if (input.header("upgrade")?.toLowerCase() !== "websocket") return false
+
+    const queryPassword = input.query("password")
+    if (!queryPassword) return false
+
+    const queryUsername = input.query("username") ?? "opencode"
+    return queryUsername === username && queryPassword === password
+  }
 
   export function origin(input: string | undefined, extra?: string[]) {
     if (!input) return undefined
@@ -106,6 +131,7 @@ export namespace Server {
         const password = Flag.OPENCODE_SERVER_PASSWORD
         if (!password) return next()
         const username = Flag.OPENCODE_SERVER_USERNAME ?? "opencode"
+        if (authorized(c.req, username, password)) return next()
         return basicAuth({ username, password })(c, next)
       })
       .use(async (c, next) => {
@@ -454,6 +480,122 @@ export namespace Server {
         async (c) => {
           const skills = await Skill.all()
           return c.json(skills)
+        },
+      )
+      .post(
+        "/skill",
+        describeRoute({
+          summary: "Save managed skill",
+          description: "Create or update a managed global skill in the OpenCode config directory.",
+          operationId: "app.saveSkill",
+          responses: {
+            200: {
+              description: "Saved skill",
+              content: {
+                "application/json": {
+                  schema: resolver(Skill.Info),
+                },
+              },
+            },
+            ...errors(400),
+          },
+        }),
+        validator("json", Skill.Draft),
+        async (c) => {
+          const skill = await Skill.save(c.req.valid("json"))
+          void Instance.disposeAll()
+            .catch(() => undefined)
+            .finally(() => {
+              GlobalBus.emit("event", {
+                directory: "global",
+                payload: {
+                  type: Event.Disposed.type,
+                  properties: {},
+                },
+              })
+            })
+          return c.json(skill)
+        },
+      )
+      .get(
+        "/instruction",
+        describeRoute({
+          summary: "Get global instructions",
+          description: "Read the global AGENTS.md instructions file used by the app.",
+          operationId: "app.instructions",
+          responses: {
+            200: {
+              description: "Instructions file",
+              content: {
+                "application/json": {
+                  schema: resolver(
+                    z.object({
+                      path: z.string(),
+                      content: z.string(),
+                    }),
+                  ),
+                },
+              },
+            },
+          },
+        }),
+        async (c) => {
+          const filepath = path.join(Global.Path.config, "AGENTS.md")
+          const content = await Filesystem.readText(filepath).catch(() => "")
+          return c.json({
+            path: filepath,
+            content,
+          })
+        },
+      )
+      .post(
+        "/instruction",
+        describeRoute({
+          summary: "Save global instructions",
+          description: "Create or update the global AGENTS.md instructions file used by the app.",
+          operationId: "app.saveInstructions",
+          responses: {
+            200: {
+              description: "Saved instructions file",
+              content: {
+                "application/json": {
+                  schema: resolver(
+                    z.object({
+                      path: z.string(),
+                      content: z.string(),
+                    }),
+                  ),
+                },
+              },
+            },
+            ...errors(400),
+          },
+        }),
+        validator(
+          "json",
+          z.object({
+            content: z.string(),
+          }),
+        ),
+        async (c) => {
+          const filepath = path.join(Global.Path.config, "AGENTS.md")
+          const content = c.req.valid("json").content
+          await Filesystem.write(filepath, content.trim() ? content.trim() + "\n" : "")
+          void Instance.disposeAll()
+            .catch(() => undefined)
+            .finally(() => {
+              GlobalBus.emit("event", {
+                directory: "global",
+                payload: {
+                  type: Event.Disposed.type,
+                  properties: {},
+                },
+              })
+            })
+          return c.json({
+            path: filepath,
+            content,
+          })
         },
       )
       .get(
