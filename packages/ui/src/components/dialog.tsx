@@ -25,9 +25,16 @@ export function Dialog(props: DialogProps) {
       data-size={props.size || "normal"}
       data-transition={props.transition ? true : undefined}
     >
+<<<<<<< HEAD
       <div
         data-slot="dialog-container"
         classList={{
+=======
+      <Kobalte open={props.open} onOpenChange={props.onOpenChange}>
+        <div
+          data-slot="dialog-container"
+          classList={{
+>>>>>>> d67f04c0b (Wrap dialog parts with Kobalte)
           ...(props.containerClassList ?? {}),
           [props.containerClass ?? ""]: !!props.containerClass,
         }}
@@ -75,6 +82,10 @@ export function Dialog(props: DialogProps) {
           <div data-slot="dialog-body">{props.children}</div>
         </Kobalte.Content>
       </div>
+<<<<<<< HEAD
+=======
+      </Kobalte>
+>>>>>>> d67f04c0b (Wrap dialog parts with Kobalte)
     </div>
   )
 }
