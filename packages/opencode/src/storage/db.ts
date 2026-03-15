@@ -10,7 +10,7 @@ import { Log } from "../util/log"
 import { NamedError } from "@opencode-ai/util/error"
 import z from "zod"
 import path from "path"
-import { readFileSync, readdirSync, existsSync } from "fs"
+import { readFileSync, readdirSync, existsSync, mkdirSync } from "fs"
 import * as schema from "./schema"
 import { Installation } from "../installation"
 import { Flag } from "../flag/flag"
@@ -82,6 +82,7 @@ export namespace Database {
 
   export const Client = lazy(() => {
     log.info("opening database", { path: Path })
+    mkdirSync(path.dirname(Path), { recursive: true })
 
     const sqlite = new BunDatabase(Path, { create: true })
     state.sqlite = sqlite
