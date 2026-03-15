@@ -516,7 +516,7 @@ export const SkillsManager: Component = () => {
             <div>
               <h3 class="text-14-medium text-text-strong">Explore skills</h3>
               <p class="pt-1 text-12-regular text-text-weak">
-                Browse built-in templates and discovered skills from every configured source.
+                Browse skills that enhance your agent's capabilities.
               </p>
             </div>
           </div>
@@ -662,11 +662,11 @@ const DialogSkill: Component<{
       class="w-full max-w-[820px] mx-auto"
     >
       <div class="flex max-h-[78vh] flex-col gap-4 overflow-hidden p-3">
-        <div class="flex flex-col gap-3 border-b border-border-weak-base pb-4 px-2 pt-1">
+        <div class="flex flex-col gap-2 border-b border-border-weak-base px-2 pb-4 pt-2">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0">
               <div class="text-11-medium uppercase tracking-[0.04em] text-text-weaker">{kind()}</div>
-              <h2 class="pt-1 text-[30px] font-medium leading-[1.05] tracking-[-0.03em] text-text-strong">
+              <h2 class="pt-2 text-[28px] font-medium leading-[1.12] tracking-[-0.03em] text-text-strong">
                 {item().name}
               </h2>
             </div>
@@ -681,7 +681,7 @@ const DialogSkill: Component<{
               </Show>
             </div>
           </div>
-          <p class="max-w-[680px] text-13-regular leading-6 text-text-weak">{item().description}</p>
+          <p class="max-w-[680px] text-13-regular leading-5 text-text-weak">{item().description}</p>
         </div>
 
         <div class="flex min-h-0 flex-col gap-3">
@@ -699,7 +699,7 @@ const DialogSkill: Component<{
             </div>
           </Show>
 
-          <div class="flex flex-wrap items-center gap-2 border-t border-border-weak-base pt-1">
+          <div class="flex flex-wrap items-center gap-2 border-t border-border-weak-base pt-3">
             <Show
               when={added()}
               fallback={
