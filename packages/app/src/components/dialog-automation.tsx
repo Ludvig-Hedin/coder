@@ -29,6 +29,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
     project: dirs()[0] ?? "coder",
     plan: plans[0] as string,
     model: models[0] as string,
+    full: false,
   })
 
   const ready = createMemo(() => !!store.title.trim() || !!store.prompt.trim())
@@ -57,7 +58,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
     <Dialog
       fit
       transition
-      containerClass="automation-dialog__container"
+      containerClass={store.full ? "automation-dialog__container automation-dialog__container--full" : "automation-dialog__container"}
       class="automation-dialog"
     >
       <form class="flex h-full flex-col" onSubmit={submit}>
@@ -71,9 +72,27 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
             value={store.title}
             onChange={(value) => setStore("title", value)}
           />
-          <Button type="button" size="large" variant="secondary" class="automation-dialog__template" onClick={useTemplate}>
-            {language.t("automations.dialog.template.action")}
-          </Button>
+          <div class="flex items-center gap-3">
+            <Button
+              type="button"
+              size="large"
+              variant="ghost"
+              class="automation-dialog__expand"
+              onClick={() => setStore("full", (value) => !value)}
+            >
+              <Icon name={store.full ? "collapse" : "expand"} size="small" />
+              {language.t("automations.dialog.expand")}
+            </Button>
+            <Button
+              type="button"
+              size="large"
+              variant="secondary"
+              class="automation-dialog__template"
+              onClick={useTemplate}
+            >
+              {language.t("automations.dialog.template.action")}
+            </Button>
+          </div>
         </div>
 
         <div class="flex-1 px-10 pb-6">
