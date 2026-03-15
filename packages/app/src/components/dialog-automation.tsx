@@ -10,6 +10,7 @@ import { getFilename } from "@opencode-ai/util/path"
 import { useGlobalSync } from "@/context/global-sync"
 import { useLanguage } from "@/context/language"
 
+const sources = ["Local"] as const
 const plans = ["Daily at 9:00 AM", "Weekdays at 9:00 AM", "Every hour"] as const
 const models = ["GPT-5.4", "GPT-5", "o4-mini"] as const
 const fallback = ["coder", "personal", "mail"] as const
@@ -27,6 +28,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
     title: "",
     prompt: "",
     project: dirs()[0] ?? "coder",
+    source: sources[0],
     plan: plans[0] as string,
     model: models[0] as string,
     full: false,
@@ -50,6 +52,7 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
       title: language.t("automations.dialog.template.title"),
       prompt: language.t("automations.dialog.template.prompt"),
       project: dirs()[0] ?? "coder",
+      source: sources[0],
       plan: plans[0],
       model: models[0],
     })
@@ -104,17 +107,27 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
             placeholder={language.t("automations.dialog.promptPlaceholder")}
             value={store.prompt}
             onChange={(value) => setStore("prompt", value)}
+            autoResize={false}
           />
         </div>
 
         <div class="automation-dialog__footer">
           <div class="automation-dialog__toolbar">
-            <Button type="button" variant="ghost" size="large" class="automation-dialog__chip">
-              <Icon name="console" size="small" />
-            </Button>
-            <Button type="button" variant="ghost" size="large" class="automation-dialog__chip">
-              <Icon name="chevron-down" size="small" />
-            </Button>
+            <Select
+              options={[...sources]}
+              current={store.source}
+              onSelect={(value) => value && setStore("source", value)}
+              variant="ghost"
+              size="large"
+              class="automation-dialog__chip automation-dialog__select"
+            >
+              {(item) => (
+                <div class="flex min-w-0 items-center gap-2">
+                  <Icon name="console" size="small" />
+                  <span class="truncate">{item}</span>
+                </div>
+              )}
+            </Select>
             <Select
               options={[...dirs()]}
               current={store.project}
@@ -160,12 +173,6 @@ export function DialogAutomation(props: { onCreate: (input: { title: string; pro
                 </div>
               )}
             </Select>
-            <Button type="button" variant="ghost" size="large" class="automation-dialog__chip">
-              <Icon name="brain" size="small" />
-            </Button>
-            <Button type="button" variant="ghost" size="large" class="automation-dialog__chip">
-              <Icon name="dot-grid" size="small" />
-            </Button>
           </div>
 
           <div class="automation-dialog__submit">
