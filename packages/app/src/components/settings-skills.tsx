@@ -1,4 +1,5 @@
 import { Button } from "@opencode-ai/ui/button"
+import { Icon, type IconName } from "@opencode-ai/ui/icon"
 import { TextField } from "@opencode-ai/ui/text-field"
 import { showToast } from "@opencode-ai/ui/toast"
 import { createMemo, createResource, createSignal, For, type Component, Show } from "solid-js"
@@ -16,11 +17,24 @@ type Skill = {
   content: string
 }
 
-const templates = [
+type Template = {
+  name: string
+  title: string
+  category: string
+  icon: IconName
+  description: string
+  preview: string
+  content: string
+}
+
+const templates: Template[] = [
   {
     name: "beautiful-design",
     title: "Beautiful design",
+    category: "Design",
+    icon: "prompt",
     description: "Refine an existing UI into a tighter, calmer, product-ready visual design.",
+    preview: "Restyles existing UI without changing layout or behavior, with tighter spacing, calmer surfaces, and stronger hierarchy.",
     content: [
       "## Role",
       "",
@@ -75,7 +89,10 @@ const templates = [
   {
     name: "ux-assessment",
     title: "UX assessment",
+    category: "Research",
+    icon: "magnifying-glass",
     description: "Review one app area for clarity, friction, hierarchy, discoverability, and ease of use.",
+    preview: "Audits one product area for clarity, cognitive load, discoverability, friction, and practical UX improvements.",
     content: [
       "## Role",
       "",
@@ -179,7 +196,10 @@ const templates = [
   {
     name: "code-review",
     title: "Code review",
+    category: "Engineering",
+    icon: "check",
     description: "Review code from the current session for correctness, safety, maintainability, and gaps.",
+    preview: "Runs a structured review for correctness, safety, maintainability, testing gaps, and approval readiness.",
     content: [
       "## Role",
       "",
@@ -214,6 +234,64 @@ const templates = [
       "In Review Summary, cover correctness, safety, improvements, and testing.",
       "",
       "If findings exist, lead with them in priority order and include file references.",
+    ].join("\n"),
+  },
+  {
+    name: "github-branch-versioning-analysis",
+    title: "Git branch strategy",
+    category: "Git",
+    icon: "branch",
+    description: "Audit branch organization and versioning, then recommend a cleaner release and branching model.",
+    preview: "Shows current git state first, then proposes branch naming, release tagging, changelog discipline, and workflow automation.",
+    content: [
+      "# GitHub Branch Organization & Versioning Analysis",
+      "",
+      "## Investigate current state",
+      "",
+      "- Check local git branches with `git branch -a`.",
+      "- Review the GitHub repository branch structure if remote access is available.",
+      "- Analyze existing commit history and naming patterns.",
+      "- Document the current versioning approach, if any.",
+      "",
+      "## Implement organized branch strategy",
+      "",
+      "### Branch naming convention",
+      "",
+      "- `feature/YYYY-MM-DD-short-description`",
+      "- `fix/YYYY-MM-DD-issue-description`",
+      "- `release/v1.x.x` for stable versions",
+      "",
+      "Examples:",
+      "",
+      "- `feature/2025-05-31-profile-forms`",
+      "- `fix/2025-05-31-auth-cookies`",
+      "",
+      "### Release versioning",
+      "",
+      "- `v1.0.0`: MVP with basic chat and profile",
+      "- `v1.1.0`: feature increments",
+      "- `v1.x.x`: continuing feature increments",
+      "",
+      "### Documentation strategy",
+      "",
+      "- Tag each working milestone with date and description.",
+      "- Update `CHANGELOG.md` with version numbers.",
+      "- Create GitHub releases for major features.",
+      "- Recommend branch protection rules for `main`.",
+      "",
+      "## Tasks",
+      "",
+      "1. Audit the current git structure.",
+      "2. Propose an organized branching model.",
+      "3. Identify whether the current stable state is suitable for `v1.0.0`.",
+      "4. Propose an automated versioning workflow.",
+      "",
+      "## Output requirements",
+      "",
+      "- Show the current state first.",
+      "- Then recommend the improved organization.",
+      "- Distinguish clearly between observations, risks, and recommendations.",
+      "- Do not create branches, tags, releases, or automation unless the user explicitly asks for changes after the analysis.",
     ].join("\n"),
   },
 ]
@@ -304,21 +382,35 @@ export const SettingsSkills: Component = () => {
       <div class="flex flex-col gap-8 max-w-[720px]">
         <div class="flex flex-col gap-1">
           <h3 class="text-14-medium text-text-strong pb-2">Built-in templates</h3>
-          <SettingsList>
+          <div class="grid gap-3 sm:grid-cols-2">
             <For each={templates}>
               {(item) => (
-                <div class="flex flex-wrap items-center justify-between gap-4 py-3 border-b border-border-weak-base last:border-none">
-                  <div class="min-w-0">
-                    <div class="text-14-medium text-text-strong">{item.title}</div>
-                    <div class="text-12-regular text-text-weak">{item.description}</div>
+                <button
+                  type="button"
+                  class="group flex h-full flex-col rounded-xl border border-border-weak-base bg-surface-base p-4 text-left transition-colors hover:bg-surface-base-hover"
+                  onClick={() => load(item)}
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-panel text-icon-base">
+                        <Icon name={item.icon} size="small" />
+                      </div>
+                      <div class="min-w-0">
+                        <div class="text-11-medium uppercase tracking-[0.04em] text-text-weaker">{item.category}</div>
+                        <div class="text-14-medium text-text-strong">{item.title}</div>
+                      </div>
+                    </div>
+                    <span class="rounded-md bg-surface-panel px-2 py-1 text-11-medium text-text-weak transition-colors group-hover:text-text-strong">
+                      Add
+                    </span>
                   </div>
-                  <Button variant="secondary" onClick={() => load(item)}>
-                    Add to editor
-                  </Button>
-                </div>
+                  <p class="pt-3 text-13-regular text-text-weak">{item.description}</p>
+                  <p class="pt-2 text-12-regular text-text-weaker">{item.preview}</p>
+                  <div class="pt-4 text-12-medium text-text-weak">Add to editor</div>
+                </button>
               )}
             </For>
-          </SettingsList>
+          </div>
         </div>
 
         <div class="flex flex-col gap-1">

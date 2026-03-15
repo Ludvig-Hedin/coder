@@ -5,13 +5,15 @@
 - Added a settings UI for editing the global `AGENTS.md` file.
 - Added preset controls for quickly generating instruction starters.
 - Added a settings UI for viewing discovered skills and saving managed global skills.
-- Added built-in skill templates in the settings UI for beautiful design, UX assessment, and code review workflows.
+- Added built-in skill templates in the settings UI for beautiful design, UX assessment, code review, and git branch strategy workflows.
+- Added project-local skills for safe file-splitting refactors and git branch/versioning analysis.
 - Added server endpoints for reading and writing the global `AGENTS.md` file and managed `SKILL.md` files.
 
 ## User-facing behavior
 
 - Settings now includes a `Custom instructions` tab.
 - Settings now includes a `Skills` tab.
+- Built-in skill templates are shown as category cards with clearer preview copy.
 - Managed skills are written to `~/.config/opencode/skills/<name>/SKILL.md`.
 - Global custom instructions are written to `~/.config/opencode/AGENTS.md`.
 
