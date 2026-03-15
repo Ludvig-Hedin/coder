@@ -376,6 +376,13 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         keybind: "shift+mod+.",
         onSelect: () => local.agent.move(-1),
       }),
+      agentCommand({
+        id: "agent.toggle.buildPlan",
+        title: language.t("command.agent.toggleBuildPlan"),
+        description: language.t("command.agent.toggleBuildPlan.description"),
+        keybind: "shift+tab",
+        onSelect: () => local.agent.toggleBuildPlan(),
+      }),
       modelCommand({
         id: "model.variant.cycle",
         title: language.t("command.model.variant.cycle"),

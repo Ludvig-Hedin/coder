@@ -219,6 +219,21 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
         if (!item) return
         agent.set(item.name)
       },
+      toggleBuildPlan() {
+        const items = list()
+        if (items.length === 0) return
+        const currentName = agent.current()?.name
+        const build = items.find((item) => item.name === "build")
+        const plan = items.find((item) => item.name === "plan")
+        if (!build && !plan) return
+
+        let target = build ?? plan
+        if (currentName === "build" && plan) target = plan
+        else if (currentName === "plan" && build) target = build
+        else if (!target) target = items[0]
+
+        if (target) agent.set(target.name)
+      },
     }
 
     const current = () => {
