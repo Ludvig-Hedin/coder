@@ -15,9 +15,12 @@
   --line-height-x-large: 180%;
   --line-height-2x-large: 200%;
   /* Typography: Tighter tracking for denser, more refined text */
-  --letter-spacing-normal: -0.01em; /* Slight negative tracking for body text */
-  --letter-spacing-tight: -0.025em; /* Tighter for headings and labels */
-  --letter-spacing-tightest: -0.04em; /* Maximum tightness for large display text */
+  --letter-spacing-normal: -0.01em;
+  /* Slight negative tracking for body text */
+  --letter-spacing-tight: -0.025em;
+  /* Tighter for headings and labels */
+  --letter-spacing-tightest: -0.04em;
+  /* Maximum tightness for large display text */
   --paragraph-spacing-base: 0;
 
   --spacing: 0.2rem;
@@ -43,11 +46,16 @@
   --container-7xl: 80rem;
 
   /* Ultra-rounded radius scale: pill-shaped, premium feel */
-  --radius-xs: 0.5rem; /* 8px - micro elements */
-  --radius-sm: 0.75rem; /* 12px - small elements */
-  --radius-md: 1rem; /* 16px - buttons, inputs */
-  --radius-lg: 1.25rem; /* 20px - cards, panels */
-  --radius-xl: 1.75rem; /* 28px - major containers */
+  --radius-xs: 0.5rem;
+  /* 8px - micro elements */
+  --radius-sm: 0.75rem;
+  /* 12px - small elements */
+  --radius-md: 1rem;
+  /* 16px - buttons, inputs */
+  --radius-lg: 1.25rem;
+  /* 20px - cards, panels */
+  --radius-xl: 1.75rem;
+  /* 28px - major containers */
 
   --shadow-xs:
     0 1px 2px -0.5px light-dark(hsl(0 0% 0% / 0.04), hsl(0 0% 0% / 0.06)),
@@ -121,7 +129,7 @@
   --surface-strong: #ffffff;
   --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
   --surface-raised-stronger-non-alpha: #ffffff;
-  --surface-user-message: rgba(0, 0, 0, 0.01);
+  --surface-user-message: rgba(0, 0, 0, 0.05);
   --surface-brand-base: #dcde8d;
   --surface-brand-hover: #d0d283;
   --surface-interactive-base: #ecf3ff;
@@ -303,18 +311,30 @@
   --icon-diff-delete-hover: #ca2d17;
   --icon-diff-modified-base: #ff8c00;
   /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
-  --syntax-comment: var(--text-weaker); /* Muted gray for comments */
-  --syntax-regexp: var(--text-base); /* Standard text for regex */
-  --syntax-string: var(--text-base); /* Primary text color for strings - monochrome */
-  --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
-  --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
-  --syntax-operator: var(--text-base); /* Standard for operators */
-  --syntax-variable: var(--text-strong); /* Strong for variables */
-  --syntax-property: var(--text-base); /* Standard for properties - monochrome */
-  --syntax-type: var(--text-weak); /* Muted for types - monochrome */
-  --syntax-constant: var(--text-strong); /* Strong for constants - monochrome */
-  --syntax-punctuation: var(--text-weaker); /* Muted for punctuation */
-  --syntax-object: var(--text-strong); /* Strong for objects */
+  --syntax-comment: var(--text-weaker);
+  /* Muted gray for comments */
+  --syntax-regexp: var(--text-base);
+  /* Standard text for regex */
+  --syntax-string: var(--text-base);
+  /* Primary text color for strings - monochrome */
+  --syntax-keyword: var(--text-weak);
+  /* Slightly muted for keywords */
+  --syntax-primitive: var(--text-strong);
+  /* Strong for primitives - monochrome */
+  --syntax-operator: var(--text-base);
+  /* Standard for operators */
+  --syntax-variable: var(--text-strong);
+  /* Strong for variables */
+  --syntax-property: var(--text-base);
+  /* Standard for properties - monochrome */
+  --syntax-type: var(--text-weak);
+  /* Muted for types - monochrome */
+  --syntax-constant: var(--text-strong);
+  /* Strong for constants - monochrome */
+  --syntax-punctuation: var(--text-weaker);
+  /* Muted for punctuation */
+  --syntax-object: var(--text-strong);
+  /* Strong for objects */
   /* Status colors remain vivid for semantic meaning */
   --syntax-success: #2dba26;
   --syntax-warning: #efa72e;
@@ -324,20 +344,34 @@
   --syntax-diff-delete: #ca2d17;
   --syntax-diff-unknown: #ff0000;
   /* Monochrome markdown: All structural elements use grayscale palette */
-  --markdown-heading: var(--text-strong); /* Strong text for headings */
-  --markdown-text: var(--text-base); /* Standard body text */
-  --markdown-link: var(--text-strong); /* Strong for links - monochrome */
-  --markdown-link-text: var(--text-base); /* Standard for link text */
-  --markdown-code: var(--text-strong); /* Strong for inline code */
-  --markdown-block-quote: var(--text-weak); /* Muted for quotes */
-  --markdown-emph: var(--text-base); /* Standard for emphasis */
-  --markdown-strong: var(--text-stronger); /* Strongest for bold */
-  --markdown-horizontal-rule: var(--border-base); /* Subtle divider */
-  --markdown-list-item: var(--text-base); /* Standard for list items */
-  --markdown-list-enumeration: var(--text-weak); /* Muted for numbers */
-  --markdown-image: var(--text-base); /* Standard for images */
-  --markdown-image-text: var(--text-weak); /* Muted for captions */
-  --markdown-code-block: var(--text-strong); /* Strong for code blocks */
+  --markdown-heading: var(--text-strong);
+  /* Strong text for headings */
+  --markdown-text: var(--text-base);
+  /* Standard body text */
+  --markdown-link: var(--text-strong);
+  /* Strong for links - monochrome */
+  --markdown-link-text: var(--text-base);
+  /* Standard for link text */
+  --markdown-code: var(--text-strong);
+  /* Strong for inline code */
+  --markdown-block-quote: var(--text-weak);
+  /* Muted for quotes */
+  --markdown-emph: var(--text-base);
+  /* Standard for emphasis */
+  --markdown-strong: var(--text-stronger);
+  /* Strongest for bold */
+  --markdown-horizontal-rule: var(--border-base);
+  /* Subtle divider */
+  --markdown-list-item: var(--text-base);
+  /* Standard for list items */
+  --markdown-list-enumeration: var(--text-weak);
+  /* Muted for numbers */
+  --markdown-image: var(--text-base);
+  /* Standard for images */
+  --markdown-image-text: var(--text-weak);
+  /* Muted for captions */
+  --markdown-code-block: var(--text-strong);
+  /* Strong for code blocks */
   --avatar-background-pink: #feeef8;
   --avatar-background-mint: #e1fbf4;
   --avatar-background-orange: #fff1e7;
@@ -386,7 +420,7 @@
     --surface-strong: rgba(255, 255, 255, 0.169);
     --surface-stronger-non-alpha: var(--surface-raised-stronger-non-alpha);
     --surface-raised-stronger-non-alpha: #1c1c1c;
-    --surface-user-message: rgba(255, 255, 255, 0.02);
+    --surface-user-message: rgba(255, 255, 255, 0.07);
     --surface-brand-base: #fab283;
     --surface-brand-hover: #eda779;
     --surface-interactive-base: #091f52;
@@ -568,18 +602,30 @@
     --icon-diff-delete-hover: #f54f36;
     --icon-diff-modified-base: #ffba92;
     /* Monochrome syntax highlighting: All code elements use grayscale except status indicators */
-    --syntax-comment: var(--text-weaker); /* Muted gray for comments */
-    --syntax-regexp: var(--text-base); /* Standard text for regex */
-    --syntax-string: var(--text-base); /* Primary text color for strings - monochrome */
-    --syntax-keyword: var(--text-weak); /* Slightly muted for keywords */
-    --syntax-primitive: var(--text-strong); /* Strong for primitives - monochrome */
-    --syntax-operator: var(--text-weak); /* Muted for operators */
-    --syntax-variable: var(--text-strong); /* Strong for variables */
-    --syntax-property: var(--text-base); /* Standard for properties - monochrome */
-    --syntax-type: var(--text-weak); /* Muted for types - monochrome */
-    --syntax-constant: var(--text-strong); /* Strong for constants - monochrome */
-    --syntax-punctuation: var(--text-weaker); /* Muted for punctuation */
-    --syntax-object: var(--text-strong); /* Strong for objects */
+    --syntax-comment: var(--text-weaker);
+    /* Muted gray for comments */
+    --syntax-regexp: var(--text-base);
+    /* Standard text for regex */
+    --syntax-string: var(--text-base);
+    /* Primary text color for strings - monochrome */
+    --syntax-keyword: var(--text-weak);
+    /* Slightly muted for keywords */
+    --syntax-primitive: var(--text-strong);
+    /* Strong for primitives - monochrome */
+    --syntax-operator: var(--text-weak);
+    /* Muted for operators */
+    --syntax-variable: var(--text-strong);
+    /* Strong for variables */
+    --syntax-property: var(--text-base);
+    /* Standard for properties - monochrome */
+    --syntax-type: var(--text-weak);
+    /* Muted for types - monochrome */
+    --syntax-constant: var(--text-strong);
+    /* Strong for constants - monochrome */
+    --syntax-punctuation: var(--text-weaker);
+    /* Muted for punctuation */
+    --syntax-object: var(--text-strong);
+    /* Strong for objects */
     /* Status colors remain vivid for semantic meaning */
     --syntax-success: #35c02d;
     --syntax-warning: #f5b238;
@@ -589,20 +635,34 @@
     --syntax-diff-delete: #faa494;
     --syntax-diff-unknown: #ff0000;
     /* Monochrome markdown: All structural elements use grayscale palette */
-    --markdown-heading: var(--text-strong); /* Strong text for headings */
-    --markdown-text: var(--text-base); /* Standard body text */
-    --markdown-link: var(--text-strong); /* Strong for links - monochrome */
-    --markdown-link-text: var(--text-base); /* Standard for link text */
-    --markdown-code: var(--text-strong); /* Strong for inline code */
-    --markdown-block-quote: var(--text-weak); /* Muted for quotes */
-    --markdown-emph: var(--text-base); /* Standard for emphasis */
-    --markdown-strong: var(--text-stronger); /* Strongest for bold */
-    --markdown-horizontal-rule: var(--border-base); /* Subtle divider */
-    --markdown-list-item: var(--text-base); /* Standard for list items */
-    --markdown-list-enumeration: var(--text-weak); /* Muted for numbers */
-    --markdown-image: var(--text-base); /* Standard for images */
-    --markdown-image-text: var(--text-weak); /* Muted for captions */
-    --markdown-code-block: var(--text-strong); /* Strong for code blocks */
+    --markdown-heading: var(--text-strong);
+    /* Strong text for headings */
+    --markdown-text: var(--text-base);
+    /* Standard body text */
+    --markdown-link: var(--text-strong);
+    /* Strong for links - monochrome */
+    --markdown-link-text: var(--text-base);
+    /* Standard for link text */
+    --markdown-code: var(--text-strong);
+    /* Strong for inline code */
+    --markdown-block-quote: var(--text-weak);
+    /* Muted for quotes */
+    --markdown-emph: var(--text-base);
+    /* Standard for emphasis */
+    --markdown-strong: var(--text-stronger);
+    /* Strongest for bold */
+    --markdown-horizontal-rule: var(--border-base);
+    /* Subtle divider */
+    --markdown-list-item: var(--text-base);
+    /* Standard for list items */
+    --markdown-list-enumeration: var(--text-weak);
+    /* Muted for numbers */
+    --markdown-image: var(--text-base);
+    /* Standard for images */
+    --markdown-image-text: var(--text-weak);
+    /* Muted for captions */
+    --markdown-code-block: var(--text-strong);
+    /* Strong for code blocks */
     --avatar-background-pink: #501b3f;
     --avatar-background-mint: #033a34;
     --avatar-background-orange: #5f2a06;

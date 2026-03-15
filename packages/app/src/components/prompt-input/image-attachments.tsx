@@ -9,12 +9,12 @@ type PromptImageAttachmentsProps = {
   removeLabel: string
 }
 
-const fallbackClass = "size-16 rounded-md bg-surface-base flex items-center justify-center border border-border-base"
+const fallbackClass = "size-10 flex items-center justify-center"
 const imageClass =
-  "size-16 rounded-md object-cover border border-border-base hover:border-border-strong-base transition-colors"
+  "size-8 rounded-full object-cover border border-border-base/20 hover:border-border-base/50 transition-colors"
 const removeClass =
-  "absolute -top-1.5 -right-1.5 size-5 rounded-full bg-surface-raised-stronger-non-alpha border border-border-base flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-surface-raised-base-hover"
-const nameClass = "absolute bottom-0 left-0 right-0 px-1 py-0.5 bg-black/50 rounded-b-md"
+  "absolute -top-1.5 -right-1.5 size-6 rounded-full bg-surface-raised-stronger-non-alpha border border-border-base flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-surface-raised-base-hover"
+const nameClass = "w-[70px]"
 
 export const PromptImageAttachments: Component<PromptImageAttachmentsProps> = (props) => {
   return (
@@ -22,12 +22,12 @@ export const PromptImageAttachments: Component<PromptImageAttachmentsProps> = (p
       <div class="flex flex-wrap gap-2 px-3 pt-3">
         <For each={props.attachments}>
           {(attachment) => (
-            <div class="relative group">
+            <div class="relative group flex flex-row items-center gap-1 w-[110px] rounded-md bg-surface-base flex items-center justify-center border border-border-base">
               <Show
                 when={attachment.mime.startsWith("image/")}
                 fallback={
                   <div class={fallbackClass}>
-                    <Icon name="folder" class="size-6 text-text-weak" />
+                    <Icon name="folder" class="size-5 text-text-weak" />
                   </div>
                 }
               >
@@ -47,7 +47,7 @@ export const PromptImageAttachments: Component<PromptImageAttachmentsProps> = (p
                 <Icon name="close" class="size-3 text-text-weak" />
               </button>
               <div class={nameClass}>
-                <span class="text-10-regular text-white truncate block">{attachment.filename}</span>
+                <span class="text-10-regular text-white truncate block max-w-[100%]">{attachment.filename}</span>
               </div>
             </div>
           )}

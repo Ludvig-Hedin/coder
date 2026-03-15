@@ -121,7 +121,7 @@
     align-items: flex-end;
   }
 
-  [data-slot="user-message-attachments"] + [data-slot="user-message-body"] {
+  [data-slot="user-message-attachments"]+[data-slot="user-message-body"] {
     margin-top: 8px;
   }
 
@@ -133,7 +133,8 @@
     background: var(--surface-user-message);
     border: none;
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: 18.5px;
+    line-height: 1.25;
 
     [data-highlight="file"] {
       color: var(--text-base);
@@ -317,7 +318,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  [data-component="reasoning-part"] [data-component="markdown"] :not(pre) > code {
+  [data-component="reasoning-part"] [data-component="markdown"] :not(pre)>code {
     opacity: 0.6;
   }
 }
@@ -406,6 +407,7 @@
     max-height: 240px;
 
     scrollbar-width: none;
+
     &::-webkit-scrollbar {
       display: none;
     }
@@ -1039,6 +1041,7 @@
 
       &[data-type="radio"] {
         background-color: var(--icon-interactive-base);
+
         [data-slot="question-option-radio-dot"] {
           opacity: 1;
         }
@@ -1168,16 +1171,16 @@
 [data-component="edit-tool"],
 [data-component="write-tool"],
 [data-component="apply-patch-tool"] {
-  > [data-component="collapsible"].tool-collapsible {
+  >[data-component="collapsible"].tool-collapsible {
     gap: 0px;
   }
 
-  > [data-component="collapsible"] > [data-slot="collapsible-content"] {
+  >[data-component="collapsible"]>[data-slot="collapsible-content"] {
     border: none;
     background: transparent;
   }
 
-  > [data-component="collapsible"] > [data-slot="collapsible-trigger"][aria-expanded="true"] {
+  >[data-component="collapsible"]>[data-slot="collapsible-trigger"][aria-expanded="true"] {
     position: sticky;
     top: var(--sticky-accordion-top, 0px);
     z-index: 20;

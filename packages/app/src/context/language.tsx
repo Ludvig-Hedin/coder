@@ -221,7 +221,16 @@ export const { use: useLanguage, provider: LanguageProvider } = createSimpleCont
     console.log("locale", locale())
     const intl = createMemo(() => INTL[locale()])
 
-    const dict = createMemo<Dictionary>(() => DICT[locale()])
+    const brandPattern = /(?<![A-Za-z0-9])opencode(?![A-Za-z0-9.-])/gi
+    const replaceBrand = (value: string) => value.replace(brandPattern, "Cloud Code")
+
+    const dict = createMemo<Dictionary>(() => {
+      const source = DICT[locale()]
+      const entries = (Object.entries(source) as Array<[keyof Dictionary, Dictionary[keyof Dictionary]]>).map(
+        ([key, value]) => [key, typeof value === "string" ? replaceBrand(value) : value] as const,
+      )
+      return Object.fromEntries(entries) as Dictionary
+    })
 
     const t = i18n.translator(dict, i18n.resolveTemplate)
 

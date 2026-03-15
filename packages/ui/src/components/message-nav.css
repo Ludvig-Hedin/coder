@@ -71,7 +71,8 @@
 }
 
 [data-slot="message-nav-title-preview"] {
-  font-size: 14px; /* text-14-regular */
+  font-size: 14px;
+  /* text-14-regular */
   color: var(--text-base);
   white-space: nowrap;
   overflow: hidden;
@@ -87,6 +88,7 @@
 [data-slot="message-nav-item"]:hover [data-slot="message-nav-message-button"] {
   background-color: var(--surface-base);
 }
+
 [data-slot="message-nav-item"]:active [data-slot="message-nav-message-button"] {
   background-color: var(--surface-base-active);
 }
