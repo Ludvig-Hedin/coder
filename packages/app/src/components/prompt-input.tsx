@@ -337,9 +337,9 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         selection ??
         (item.selection
           ? ({
-              start: item.selection.startLine,
-              end: item.selection.endLine,
-            } satisfies SelectedLineRange)
+            start: item.selection.startLine,
+            end: item.selection.endLine,
+          } satisfies SelectedLineRange)
           : undefined)
       if (!nextSelection) return []
 
@@ -1236,6 +1236,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
         onSubmit={handleSubmit}
         classList={{
           "group/prompt-input": true,
+          "p-2.5": true,
           "focus-within:shadow-xs-border": true,
           "border-icon-info-active border-dashed": store.draggingType !== null,
           [props.class ?? ""]: !!props.class,

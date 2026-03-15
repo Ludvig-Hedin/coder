@@ -15,7 +15,7 @@ import { disposeIfDisposable, getHoveredLinkText, setOptionIfSupported } from "@
 import { terminalWriter } from "@/utils/terminal-writer"
 
 const TOGGLE_TERMINAL_ID = "terminal.toggle"
-const DEFAULT_TOGGLE_TERMINAL_KEYBIND = "ctrl+`"
+const DEFAULT_TOGGLE_TERMINAL_KEYBIND = "ctrl+`, mod+j"
 export interface TerminalProps extends ComponentProps<"div"> {
   pty: LocalPTY
   autoFocus?: boolean

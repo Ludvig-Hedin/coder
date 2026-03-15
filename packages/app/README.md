@@ -49,3 +49,29 @@ Environment options:
 ## Deployment
 
 You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+
+### Vercel SPA routing
+
+When deploying under Vercel, paths such as `/Lw/session/...` need to fall back to the single-page shell. [`vercel.json`](/Users/ludvighedin/Programming/personal/AB/coder/packages/app/vercel.json) rewrites non-asset requests to `/index.html` while still letting the CDN serve real files.
+
+## Local isolated dev
+
+The installed `opencode` app and the repo dev server share the same default XDG data/config/state directories unless you isolate them.
+
+From the repo root, run:
+
+```bash
+bun run dev:backend:isolated
+```
+
+That starts the backend on `http://127.0.0.1:4096` with repo-local XDG folders under `.devstate/`, so it does not reuse the installed app's sessions or config.
+
+In a second terminal, run:
+
+```bash
+bun run dev:web:isolated
+```
+
+That starts the Vite frontend and points it at the isolated backend on port `4096`.
+
+To launch both services from a single command, run `bun run all` from the repo root; it shells out to `dev:backend:isolated` and `dev:web:isolated` concurrently so you still get a single stop/ctrl+C.
