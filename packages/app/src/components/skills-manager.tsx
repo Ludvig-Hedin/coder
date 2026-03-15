@@ -695,71 +695,93 @@ const DialogSkill: Component<{
   const dialog = useDialog()
   const item = () => props.detail.item
   const added = () => props.detail.added
+  const kind = () => (props.detail.type === "template" ? "Built-in template" : added() ? "Installed skill" : "Available skill")
+  const source = () => {
+    if (props.detail.type === "template") return "Template"
+    return (item() as Skill).location.startsWith(props.root) ? "Managed copy" : "Read-only source"
+  }
 
   return (
     <Dialog
-      title={item().name}
-      description={props.detail.type === "template" ? "Built-in template" : item().description}
-      class="w-full max-w-[840px] mx-auto"
+      title=""
+      description=""
+      class="w-full max-w-[820px] mx-auto"
     >
-      <div class="flex flex-col gap-5">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-md bg-surface-panel px-2 py-1 text-11-medium text-text-weak">
-            {props.detail.type === "template" ? "Template" : added() ? "Installed" : "Available"}
-          </span>
-          <Show when={props.detail.type === "skill"}>
-            <span class="rounded-md bg-surface-panel px-2 py-1 text-11-medium text-text-weaker">
-              {(item() as Skill).location.startsWith(props.root) ? "Managed copy" : "Read-only source"}
-            </span>
-          </Show>
-        </div>
-        <p class="text-13-regular text-text-weak">{item().description}</p>
-        <div class="rounded-xl border border-border-weak-base bg-surface-panel p-4">
-          <div class="pb-2 text-12-medium text-text-weaker">Skill content</div>
-          <pre class="max-h-[420px] overflow-auto whitespace-pre-wrap break-words text-12-regular text-text-strong">
-            {item().content}
-          </pre>
-        </div>
-        <Show when={props.detail.type === "skill"}>
-          <div class="rounded-xl border border-border-weak-base bg-surface-base p-4">
-            <div class="pb-1 text-12-medium text-text-weaker">Source path</div>
-            <div class="break-all text-12-regular text-text-weak">{(item() as Skill).location}</div>
+      <div class="flex flex-col gap-4 px-1 pb-1">
+        <div class="flex flex-col gap-3 border-b border-border-weak-base pb-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-11-medium uppercase tracking-[0.04em] text-text-weaker">{kind()}</div>
+              <h2 class="pt-1 text-[30px] font-medium leading-[1.05] tracking-[-0.03em] text-text-strong">
+                {item().name}
+              </h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-11-medium text-text-weak">
+                {source()}
+              </span>
+              <Show when={added()}>
+                <span class="rounded-md border border-border-weak-base bg-surface-panel px-2.5 py-1 text-11-medium text-text-weak">
+                  Installed
+                </span>
+              </Show>
+            </div>
           </div>
-        </Show>
-        <div class="flex flex-wrap gap-3">
-          <Show
-            when={added()}
-            fallback={
+          <p class="max-w-[680px] text-13-regular leading-6 text-text-weak">{item().description}</p>
+        </div>
+
+        <div class="grid gap-3">
+          <div class="rounded-lg border border-border-weak-base bg-surface-panel px-4 py-3">
+            <div class="pb-2 text-11-medium uppercase tracking-[0.04em] text-text-weaker">Skill content</div>
+            <pre class="max-h-[420px] overflow-auto whitespace-pre-wrap break-words text-[13px] leading-6 text-text-strong">
+              {item().content}
+            </pre>
+          </div>
+
+          <Show when={props.detail.type === "skill"}>
+            <div class="rounded-lg border border-border-weak-base bg-surface-base px-4 py-3">
+              <div class="pb-1 text-11-medium uppercase tracking-[0.04em] text-text-weaker">Source path</div>
+              <div class="break-all text-12-regular leading-5 text-text-weak">{(item() as Skill).location}</div>
+            </div>
+          </Show>
+
+          <div class="flex flex-wrap items-center gap-2 border-t border-border-weak-base pt-1">
+            <Show
+              when={added()}
+              fallback={
+                <Button
+                  size="small"
+                  onClick={() =>
+                    void props.onAdd().finally(() => {
+                      dialog.close()
+                    })
+                  }
+                  loading={props.saving() === item().name}
+                >
+                  Add skill
+                </Button>
+              }
+            >
               <Button
+                size="small"
+                variant="ghost"
                 onClick={() =>
-                  void props.onAdd().finally(() => {
+                  void props.onRemove().finally(() => {
                     dialog.close()
                   })
                 }
-                loading={props.saving() === item().name}
+                loading={props.removing() === item().name}
               >
-                Add skill
+                Remove skill
               </Button>
-            }
-          >
-            <Button
-              variant="ghost"
-              onClick={() =>
-                void props.onRemove().finally(() => {
-                  dialog.close()
-                })
-              }
-              loading={props.removing() === item().name}
-            >
-              Remove skill
+            </Show>
+            <Button size="small" variant="secondary" onClick={props.onEdit}>
+              {added() ? "Edit managed copy" : "Open in editor"}
             </Button>
-          </Show>
-          <Button variant="secondary" onClick={props.onEdit}>
-            {added() ? "Edit managed copy" : "Open in editor"}
-          </Button>
-          <Button variant="ghost" onClick={() => dialog.close()}>
-            Close
-          </Button>
+            <Button size="small" variant="ghost" onClick={() => dialog.close()}>
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     </Dialog>
