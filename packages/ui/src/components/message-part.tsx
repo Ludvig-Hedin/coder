@@ -969,27 +969,25 @@ export function UserMessageDisplay(props: { message: UserMessage; parts: PartTyp
               const name = file.filename ?? i18n.t("ui.message.attachment.alt")
 
               return (
-                <div
-                  data-slot="user-message-attachment"
-                  data-type={type}
-                  data-clickable={type === "image" ? "true" : undefined}
-                  title={type === "file" ? name : undefined}
-                  onClick={() => {
-                    if (type === "image") openImagePreview(file.url, name)
-                  }}
-                >
+              <div
+                data-slot="user-message-attachment"
+                data-type={type}
+                data-clickable={type === "image" ? "true" : undefined}
+                title={type === "file" ? name : undefined}
+                onClick={() => {
+                  if (type === "image") openImagePreview(file.url, name)
+                }}
+              >
+                <div data-slot="user-message-attachment-icon">
                   <Show
                     when={type === "image"}
-                    fallback={
-                      <div data-slot="user-message-attachment-file">
-                        <FileIcon node={{ path: name, type: "file" }} />
-                        <span data-slot="user-message-attachment-name">{name}</span>
-                      </div>
-                    }
+                    fallback={<FileIcon node={{ path: name, type: "file" }} />}
                   >
                     <img data-slot="user-message-attachment-image" src={file.url} alt={name} />
                   </Show>
                 </div>
+                <span data-slot="user-message-attachment-name">{name}</span>
+              </div>
               )
             }}
           </For>

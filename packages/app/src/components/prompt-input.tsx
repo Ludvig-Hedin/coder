@@ -247,6 +247,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   const imageAttachments = createMemo(() =>
     prompt.current().filter((part): part is ImageAttachmentPart => part.type === "image"),
   )
+  const attachmentsSpacing = createMemo(() => (imageAttachments().length > 0 ? 52 : 0))
+  const placeholderTop = createMemo(() => (attachmentsSpacing() > 0 ? attachmentsSpacing() + 6 : 0))
 
   const [store, setStore] = createStore<{
     popover: "at" | "slash" | null
@@ -1203,6 +1205,19 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       }
     }
 
+    if (
+      !store.popover &&
+      event.key === "Tab" &&
+      event.shiftKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
+      event.preventDefault()
+      local.agent.toggleBuildPlan()
+      return
+    }
+
     if (ctrl && event.code === "KeyG") {
       if (store.popover) {
         closePopover()
@@ -1259,11 +1274,13 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       />
       <DockShellForm
         onSubmit={handleSubmit}
+        style={{ overflow: "visible" }}
         classList={{
           "group/prompt-input": true,
           "p-2.5": true,
           "focus-within:shadow-xs-border": true,
           "border-icon-info-active border-dashed": store.draggingType !== null,
+          relative: true,
           [props.class ?? ""]: !!props.class,
         }}
       >
@@ -1285,6 +1302,8 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           t={(key) => language.t(key as Parameters<typeof language.t>[0])}
         />
         <PromptImageAttachments
+          class="absolute left-3 top-3 z-10 flex flex-wrap gap-2"
+          style={{ width: "calc(100% - 24px)" }}
           attachments={imageAttachments()}
           onOpen={(attachment) =>
             dialog.show(() => <ImagePreview src={attachment.dataUrl} alt={attachment.filename} />)
@@ -1310,7 +1329,10 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
           <div
             class="relative max-h-[240px] overflow-y-auto no-scrollbar"
             ref={(el) => (scrollRef = el)}
-            style={{ "scroll-padding-bottom": space }}
+          style={{
+            "scroll-padding-bottom": space,
+            "padding-top": `${attachmentsSpacing()}px`,
+          }}
           >
             <div
               data-component="prompt-input"
@@ -1342,9 +1364,12 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             />
             <Show when={!hasText()}>
               <div
-                class="absolute top-0 inset-x-0 pl-3 pr-2 pt-2 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate"
+                class="absolute inset-x-0 pl-3 pr-2 pt-2 text-14-regular text-text-weak pointer-events-none whitespace-nowrap truncate"
                 classList={{ "font-mono!": store.mode === "shell" }}
-                style={{ "padding-bottom": space }}
+                style={{
+                  "padding-bottom": space,
+                  top: `${placeholderTop()}px`,
+                }}
               >
                 {placeholder()}
               </div>
