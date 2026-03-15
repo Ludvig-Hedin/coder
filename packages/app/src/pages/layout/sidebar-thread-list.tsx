@@ -357,6 +357,7 @@ export const SidebarThreadList = (props: {
   onOpenAutomations: () => void
   onOpenProject: () => void
   onOpenSettings: () => void
+  onOpenSkills: () => void
   onEditThread: (session: Session) => void
   onRemoveThread: (session: Session) => void
 }): JSX.Element => {
@@ -427,6 +428,21 @@ export const SidebarThreadList = (props: {
           }}
         >
           {language.t("automations.title")}
+        </Button>
+
+        <Button
+          variant="ghost"
+          class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+          icon="models"
+          onClick={props.onOpenSkills}
+          style={{
+            "border-radius": row.radius,
+            "padding-left": row.padX,
+            "padding-right": row.padX,
+            "line-height": row.lineHeight.toString(),
+          }}
+        >
+          Skills
         </Button>
 
         <section class="flex flex-col gap-2">

@@ -1174,6 +1174,10 @@ export default function Layout(props: ParentProps) {
     dialog.show(() => <DialogSettings />)
   }
 
+  function openSkills() {
+    dialog.show(() => <DialogSettings tab="skills" />)
+  }
+
   function projectRoot(directory: string) {
     const project = layout.projects
       .list()
@@ -2390,6 +2394,7 @@ export default function Layout(props: ParentProps) {
       onOpenAutomations={openAutomations}
       onOpenProject={() => void chooseProject()}
       onOpenSettings={openSettings}
+      onOpenSkills={openSkills}
       onEditThread={(session) => showEditThreadDialog(session)}
       onRemoveThread={(session) => confirmRemoveThread(session)}
     />

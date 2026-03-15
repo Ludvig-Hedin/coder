@@ -13,7 +13,7 @@ import { SettingsModels } from "./settings-models"
 import { SettingsAssistant } from "./settings-assistant"
 import { SettingsSkills } from "./settings-skills"
 
-export const DialogSettings: Component = () => {
+export const DialogSettings: Component<{ tab?: "general" | "shortcuts" | "assistant" | "skills" | "providers" | "models" }> = (props) => {
   const language = useLanguage()
   const platform = usePlatform()
 
@@ -27,7 +27,7 @@ export const DialogSettings: Component = () => {
           aria-label={language.t("ui.common.close")}
         />
       </div>
-      <Tabs orientation="vertical" variant="settings" defaultValue="general" class="h-full settings-dialog">
+      <Tabs orientation="vertical" variant="settings" defaultValue={props.tab ?? "general"} class="h-full settings-dialog">
         <Tabs.List>
           <div class="flex flex-col justify-between h-full w-full">
             <div class="flex flex-col gap-3 w-full pt-3">
