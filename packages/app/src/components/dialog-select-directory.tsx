@@ -358,7 +358,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
       .sort((a, b) => b.at - a.at || a.index - b.index)
       .slice(0, 5)
       .map(({ project }) => {
-        const row = toRow(project.worktree, home(), "recent", "open")
+        const row = toRow(project.worktree, home(), "recent", "browse")
         const name = project.name || getFilename(project.worktree)
         return {
           ...row,
@@ -384,7 +384,7 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
     }
 
     const results = await browser.search(query)
-    const rows = results.map((absolute) => toRow(absolute, home(), "folders", "open"))
+    const rows = results.map((absolute) => toRow(absolute, home(), "folders", "browse"))
     return uniqueRows([...recentProjects(), ...rows])
   }
 
@@ -552,12 +552,10 @@ export function DialogSelectDirectory(props: DialogSelectDirectoryProps) {
           }}
           onSelect={(item) => {
             if (!item) return
-            if (!cleanInput(filter()) && item.mode === "browse") {
-              setCwd(item.absolute)
-              refresh()
-              return
-            }
-            resolve(item.absolute)
+            setCwd(item.absolute)
+            setFilter("")
+            list?.setFilter("")
+            refresh()
           }}
         >
           {(item) => {
