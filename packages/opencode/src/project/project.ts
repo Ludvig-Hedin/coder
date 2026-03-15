@@ -11,6 +11,7 @@ import { BusEvent } from "@/bus/bus-event"
 import { iife } from "@/util/iife"
 import { GlobalBus } from "@/bus/global"
 import { existsSync } from "fs"
+import { NamedError } from "@opencode-ai/util/error"
 import { git } from "../util/git"
 import { Glob } from "../util/glob"
 import { which } from "../util/which"
@@ -64,6 +65,13 @@ export namespace Project {
   export const Event = {
     Updated: BusEvent.define("project.updated", Info),
   }
+
+  export const InitGitError = NamedError.create(
+    "ProjectInitGitError",
+    z.object({
+      message: z.string(),
+    }),
+  )
 
   type Row = typeof ProjectTable.$inferSelect
 
@@ -211,8 +219,8 @@ export namespace Project {
 
       return {
         id: ProjectID.global,
-        worktree: "/",
-        sandbox: "/",
+        worktree: directory,
+        sandbox: directory,
         vcs: Info.shape.vcs.parse(Flag.OPENCODE_FAKE_VCS),
       }
     })
@@ -347,17 +355,24 @@ export namespace Project {
 
   export async function initGit(input: { directory: string; project: Info }) {
     if (input.project.vcs === "git") return input.project
-    if (!which("git")) throw new Error("Git is not installed")
+    if (!input.directory) throw new InitGitError({ message: "No project directory available for git initialization" })
+
+    const dir = Filesystem.resolve(input.directory)
+    if (dir === "/") throw new InitGitError({ message: "Cannot initialize a Git repository in /" })
+    if (!Filesystem.stat(dir)?.isDirectory()) {
+      throw new InitGitError({ message: `Project directory does not exist or is not a directory: ${dir}` })
+    }
+    if (!which("git")) throw new InitGitError({ message: "Git is not installed" })
 
     const result = await git(["init", "--quiet"], {
-      cwd: input.directory,
+      cwd: dir,
     })
     if (result.exitCode !== 0) {
       const text = result.stderr.toString().trim() || result.text().trim()
-      throw new Error(text || "Failed to initialize git repository")
+      throw new InitGitError({ message: text || "Failed to initialize git repository" })
     }
 
-    return (await fromDirectory(input.directory)).project
+    return (await fromDirectory(dir)).project
   }
 
   export const update = fn(

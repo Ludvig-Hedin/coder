@@ -116,4 +116,23 @@ describe("project.initGit endpoint", () => {
       GlobalBus.off("event", fn)
     }
   })
+
+  test("rejects initializing git in root", async () => {
+    const app = Server.Default()
+
+    const init = await app.request("/project/git/init", {
+      method: "POST",
+      headers: {
+        "x-opencode-directory": "/",
+      },
+    })
+
+    expect(init.status).toBe(400)
+    expect(await init.json()).toMatchObject({
+      name: "ProjectInitGitError",
+      data: {
+        message: "Cannot initialize a Git repository in /",
+      },
+    })
+  })
 })

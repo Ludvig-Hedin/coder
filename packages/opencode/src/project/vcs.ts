@@ -6,6 +6,7 @@ import { Log } from "@/util/log"
 import { Instance } from "./instance"
 import { FileWatcher } from "@/file/watcher"
 import { git } from "@/util/git"
+import { which } from "@/util/which"
 
 const log = Log.create({ service: "vcs" })
 
@@ -21,7 +22,9 @@ export namespace Vcs {
 
   export const Info = z
     .object({
-      branch: z.string(),
+      branch: z.string().optional(),
+      remote: z.string().optional(),
+      gh: z.boolean(),
     })
     .meta({
       ref: "VcsInfo",
@@ -36,6 +39,20 @@ export namespace Vcs {
     const text = result.text().trim()
     if (!text) return
     return text
+  }
+
+  async function currentRemote() {
+    const result = await git(["remote"], {
+      cwd: Instance.worktree,
+    })
+    if (result.exitCode !== 0) return
+    const list = result
+      .text()
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean)
+    if (list.includes("origin")) return "origin"
+    return list[0]
   }
 
   const state = Instance.state(
@@ -72,5 +89,13 @@ export namespace Vcs {
 
   export async function branch() {
     return await state().then((s) => s.branch())
+  }
+
+  export async function get(): Promise<Info> {
+    return {
+      branch: await branch(),
+      remote: Instance.project.vcs === "git" ? await currentRemote() : undefined,
+      gh: which("gh") !== null,
+    }
   }
 }

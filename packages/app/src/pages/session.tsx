@@ -26,6 +26,7 @@ import { previewSelectedLines } from "@opencode-ai/ui/pierre/selection-bridge"
 import { Button } from "@opencode-ai/ui/button"
 import { showToast } from "@opencode-ai/ui/toast"
 import { base64Encode, checksum } from "@opencode-ai/util/encode"
+import { getFilename } from "@opencode-ai/util/path"
 import { useNavigate, useSearchParams } from "@solidjs/router"
 import { NewSessionView, SessionHeader } from "@/components/session"
 import { useComments } from "@/context/comments"
@@ -504,6 +505,13 @@ export default function Page() {
     deferRender: false,
   })
 
+  const [vcs, setVcs] = createStore({
+    ready: false,
+    ok: false,
+    remote: undefined as string | undefined,
+    gh: false,
+  })
+
   const [followup, setFollowup] = createStore({
     items: {} as Record<string, (FollowupDraft & { id: string })[] | undefined>,
     sending: {} as Record<string, string | undefined>,
@@ -547,6 +555,61 @@ export default function Page() {
 
   const turnDiffs = createMemo(() => lastUserMessage()?.summary?.diffs ?? [])
   const reviewDiffs = createMemo(() => (store.changes === "session" ? diffs() : turnDiffs()))
+  const publish = createMemo(() => {
+    const root = sync.project?.worktree || sdk.directory
+    const name = getFilename(root) || "repo"
+    const lead = ['git add .', 'git commit -m "Initial commit"']
+    const tail = vcs.gh
+      ? [`gh repo create ${name} --private --source=. --remote=origin --push`]
+      : [`git remote add origin git@github.com:<your-user>/${name}.git`, "git push -u origin HEAD"]
+    return [...lead, ...tail].join("\n")
+  })
+
+  createEffect(
+    on(
+      () => `${sdk.directory}\n${sync.project?.worktree ?? ""}\n${sync.project?.vcs ?? ""}`,
+      (key) => {
+        if (!key) return
+        if (sync.project?.vcs !== "git") {
+          setVcs({
+            ready: false,
+            ok: false,
+            remote: undefined,
+            gh: false,
+          })
+          return
+        }
+        setVcs({
+          ready: false,
+          ok: false,
+          remote: undefined,
+          gh: false,
+        })
+        void sdk.client.vcs
+          .get()
+          .then((x) => {
+            if (`${sdk.directory}\n${sync.project?.worktree ?? ""}\n${sync.project?.vcs ?? ""}` !== key) return
+            const data = x.data as { remote?: string; gh?: boolean } | undefined
+            setVcs({
+              ready: true,
+              ok: true,
+              remote: data?.remote,
+              gh: !!data?.gh,
+            })
+          })
+          .catch(() => {
+            if (`${sdk.directory}\n${sync.project?.worktree ?? ""}\n${sync.project?.vcs ?? ""}` !== key) return
+            setVcs({
+              ready: true,
+              ok: false,
+              remote: undefined,
+              gh: false,
+            })
+          })
+      },
+      { defer: true },
+    ),
+  )
 
   const newSessionWorktree = createMemo(() => {
     if (store.newSessionWorktree === "create") return "create"
@@ -621,6 +684,7 @@ export default function Page() {
   const reviewEmptyKey = createMemo(() => {
     const project = sync.project
     if (project && !project.vcs) return "session.review.noVcs"
+    if (project?.vcs === "git" && vcs.ready && vcs.ok && !vcs.remote) return "session.review.noRemote"
     if (sync.data.config.snapshot === false) return "session.review.noSnapshot"
     return "session.review.empty"
   })
@@ -662,6 +726,26 @@ export default function Page() {
       })
       .finally(() => {
         setUi("git", false)
+      })
+  }
+
+  function copyPublish() {
+    navigator.clipboard
+      .writeText(publish())
+      .then(() => {
+        showToast({
+          variant: "success",
+          icon: "circle-check",
+          title: language.t("session.share.copy.copied"),
+          description: "GitHub publish commands copied",
+        })
+      })
+      .catch((err) => {
+        showToast({
+          variant: "error",
+          title: language.t("common.requestFailed"),
+          description: formatServerError(err, language.t),
+        })
       })
   }
 
@@ -965,6 +1049,26 @@ export default function Page() {
             {ui.git
               ? language.t("session.review.noVcs.createGit.actionLoading")
               : language.t("session.review.noVcs.createGit.action")}
+          </Button>
+        </div>
+      )
+    }
+
+    if (reviewEmptyKey() === "session.review.noRemote") {
+      return (
+        <div class={input.emptyClass}>
+          <div class="flex flex-col gap-3 max-w-md">
+            <div class="text-14-medium text-text-strong">Local Git is ready</div>
+            <div class="text-14-regular text-text-base" style={{ "line-height": "var(--line-height-normal)" }}>
+              No remote is configured for this repository yet. Publish it to GitHub from the terminal with these
+              commands.
+            </div>
+            <pre class="rounded-md border border-border-weak-base bg-surface-panel p-3 text-12-mono text-left whitespace-pre-wrap break-all">
+              {publish()}
+            </pre>
+          </div>
+          <Button size="large" onClick={copyPublish}>
+            Copy publish commands
           </Button>
         </div>
       )

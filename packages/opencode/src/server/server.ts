@@ -14,6 +14,7 @@ import { LSP } from "../lsp"
 import { Format } from "../format"
 import { TuiRoutes } from "./routes/tui"
 import { Instance } from "../project/instance"
+import { Project } from "../project/project"
 import { Vcs } from "../project/vcs"
 import { Agent } from "../agent/agent"
 import { Skill } from "../skill/skill"
@@ -86,6 +87,7 @@ export namespace Server {
         if (err instanceof NamedError) {
           let status: ContentfulStatusCode
           if (err instanceof NotFoundError) status = 404
+          else if (err instanceof Project.InitGitError) status = 400
           else if (err instanceof Provider.ModelNotFoundError) status = 400
           else if (err.name.startsWith("Worktree")) status = 400
           else status = 500
@@ -333,10 +335,7 @@ export namespace Server {
           },
         }),
         async (c) => {
-          const branch = await Vcs.branch()
-          return c.json({
-            branch,
-          })
+          return c.json(await Vcs.get())
         },
       )
       .get(

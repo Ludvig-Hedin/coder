@@ -1,5 +1,4 @@
 import { describe, expect, mock, test } from "bun:test"
-import { Project } from "../../src/project/project"
 import { Log } from "../../src/util/log"
 import { $ } from "bun"
 import path from "path"
@@ -12,9 +11,13 @@ Log.init({ print: false })
 
 const gitModule = await import("../../src/util/git")
 const originalGit = gitModule.git
+const whichModule = await import("../../src/util/which")
+const originalWhich = whichModule.which
 
 type Mode = "none" | "rev-list-fail" | "top-fail" | "common-dir-fail"
 let mode: Mode = "none"
+type WhichMode = "none" | "missing-git"
+let whichMode: WhichMode = "none"
 
 mock.module("../../src/util/git", () => ({
   git: (args: string[], opts: { cwd: string; env?: Record<string, string> }) => {
@@ -52,6 +55,13 @@ mock.module("../../src/util/git", () => ({
   },
 }))
 
+mock.module("../../src/util/which", () => ({
+  which: (cmd: string, env?: NodeJS.ProcessEnv) => {
+    if (whichMode === "missing-git" && cmd === "git") return null
+    return originalWhich(cmd, env)
+  },
+}))
+
 async function withMode(next: Mode, run: () => Promise<void>) {
   const prev = mode
   mode = next
@@ -62,11 +72,35 @@ async function withMode(next: Mode, run: () => Promise<void>) {
   }
 }
 
+async function withWhich(next: WhichMode, run: () => Promise<void>) {
+  const prev = whichMode
+  whichMode = next
+  try {
+    await run()
+  } finally {
+    whichMode = prev
+  }
+}
+
 async function loadProject() {
   return (await import("../../src/project/project")).Project
 }
 
+const Project = await loadProject()
+
 describe("Project.fromDirectory", () => {
+  test("should keep the opened directory for non-git projects", async () => {
+    const p = await loadProject()
+    await using tmp = await tmpdir()
+
+    const { project, sandbox } = await p.fromDirectory(tmp.path)
+
+    expect(project.id).toBe(ProjectID.global)
+    expect(project.vcs).toBeUndefined()
+    expect(project.worktree).toBe(tmp.path)
+    expect(sandbox).toBe(tmp.path)
+  })
+
   test("should handle git repository with no commits", async () => {
     const p = await loadProject()
     await using tmp = await tmpdir()
@@ -134,6 +168,26 @@ describe("Project.fromDirectory", () => {
       expect(project.vcs).toBe("git")
       expect(project.worktree).toBe(tmp.path)
       expect(sandbox).toBe(tmp.path)
+    })
+  })
+})
+
+describe("Project.initGit", () => {
+  test("reports missing git cleanly", async () => {
+    const p = await loadProject()
+    await using tmp = await tmpdir()
+    const { project } = await p.fromDirectory(tmp.path)
+
+    await withWhich("missing-git", async () => {
+      await expect(
+        p.initGit({
+          directory: tmp.path,
+          project,
+        }),
+      ).rejects.toMatchObject({
+        name: "ProjectInitGitError",
+        data: { message: "Git is not installed" },
+      })
     })
   })
 })
