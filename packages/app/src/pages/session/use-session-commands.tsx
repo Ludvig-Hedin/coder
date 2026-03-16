@@ -15,6 +15,7 @@ import { DialogSelectFile } from "@/components/dialog-select-file"
 import { DialogSelectModel } from "@/components/dialog-select-model"
 import { DialogSelectMcp } from "@/components/dialog-select-mcp"
 import { DialogFork } from "@/components/dialog-fork"
+import { DialogReview, type FixMode } from "@/components/dialog-review"
 import { showToast } from "@opencode-ai/ui/toast"
 import { findLast } from "@opencode-ai/util/array"
 import { createSessionTabs } from "@/pages/session/helpers"
@@ -314,6 +315,11 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         onSelect: () => layout.fileTree.toggle(),
       }),
       viewCommand({
+        id: "preview.toggle",
+        title: "Toggle Preview",
+        onSelect: () => layout.preview.toggle(),
+      }),
+      viewCommand({
         id: "input.focus",
         title: language.t("command.input.focus"),
         keybind: "ctrl+l",
@@ -495,6 +501,33 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
         slash: "fork",
         disabled: !params.id || visibleUserMessages().length === 0,
         onSelect: () => dialog.show(() => <DialogFork />),
+      }),
+      // Trigger an AI code review in a subtask session; prompts for target + fix mode
+      sessionCommand({
+        id: "session.review.run",
+        title: language.t("command.review.run"),
+        description: language.t("command.review.run.description"),
+        keybind: "mod+shift+e",
+        slash: "review",
+        disabled: !params.id,
+        onSelect: () =>
+          dialog.show(() => (
+            <DialogReview
+              onRun={(args: string, _mode: FixMode) => {
+                const id = params.id
+                if (!id) return
+                // Send /review with the selected target as arguments to the current session.
+                // The review command is configured as subtask:true so it doesn't interrupt.
+                sdk.client.session
+                  .command({
+                    sessionID: id,
+                    command: "review",
+                    arguments: args,
+                  })
+                  .catch(() => {})
+              }}
+            />
+          )),
       }),
       ...share,
     ]

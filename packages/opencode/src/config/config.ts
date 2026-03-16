@@ -1201,6 +1201,45 @@ export namespace Config {
             .describe("Token buffer for compaction. Leaves enough window to avoid overflow during compaction."),
         })
         .optional(),
+      review: z
+        .object({
+          // fix mode: manual = suggest only; auto = apply safe patches; agent = agent decides
+          mode: z.enum(["manual", "auto", "agent"]).optional().default("manual").describe(
+            "How to handle suggested fixes: 'manual' (suggest only), 'auto' (apply safe patches), 'agent' (agent decides)",
+          ),
+          hooks: z
+            .object({
+              // install a pre-push hook that runs /review before every push
+              pre_push: z.boolean().optional().default(false).describe("Run AI review as a pre-push git hook"),
+              // block the push if error-severity issues are found
+              fail_on: z.enum(["error", "warning", "any", "never"]).optional().default("error").describe(
+                "Severity level that causes the pre-push hook to block the push",
+              ),
+            })
+            .optional()
+            .default({
+              pre_push: false,
+              fail_on: "error",
+            }),
+          ci: z
+            .object({
+              // auto-trigger review on every PR (not just /review comment)
+              auto: z.boolean().optional().default(false).describe("Automatically run review on every pull request"),
+              // severity level that fails the CI check
+              fail_on: z.enum(["error", "warning", "any", "never"]).optional().default("error"),
+            })
+            .optional()
+            .default({
+              auto: false,
+              fail_on: "error",
+            }),
+          // model override for review — defaults to session model
+          model: z.string().optional().describe("Model to use for code review (defaults to current session model)"),
+          // paths to ignore during review (gitignore-style globs)
+          ignore: z.array(z.string()).optional().default([]).describe("Glob patterns to exclude from review"),
+        })
+        .optional()
+        .describe("Code review configuration, see https://opencode.ai/docs/review"),
       experimental: z
         .object({
           disable_paste_summary: z.boolean().optional(),

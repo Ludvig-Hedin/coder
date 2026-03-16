@@ -1781,6 +1781,31 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
             </div>
             <div class="flex items-center gap-3">
               <SessionContextUsage variant="indicator" placement="bottom" />
+              {/* Manual code review trigger — opens DialogReview to choose target + fix mode */}
+              <TooltipKeybind
+                placement="top"
+                gutter={8}
+                title={language.t("prompt.action.review")}
+                keybind={command.keybind("session.review.run")}
+              >
+                <Button
+                  data-action="prompt-review"
+                  variant="ghost"
+                  onClick={() => command.trigger("session.review.run")}
+                  class="group h-7 px-3 flex items-center gap-2 rounded-full text-11-regular text-text-weak/70 transition-colors duration-150 hover:text-text-weak"
+                  style={control()}
+                  aria-label={language.t("prompt.action.review")}
+                >
+                  <Icon
+                    name="review"
+                    size="small"
+                    class="transition-colors duration-150 text-text-weak/70 group-hover:text-text-weak"
+                  />
+                  <span class="text-11-regular tracking-tight text-text-weak/70 group-hover:text-text-weak">
+                    {language.t("prompt.action.review")}
+                  </span>
+                </Button>
+              </TooltipKeybind>
               <TooltipKeybind
                 placement="top"
                 gutter={8}
