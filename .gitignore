@@ -23,6 +23,14 @@ target
 .scripts
 .direnv/
 
+.env*
+
+.devstate/
+
+.claude/
+CLAUDE.md
+
+
 # Local dev files
 opencode-dev
 logs/
