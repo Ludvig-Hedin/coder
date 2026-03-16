@@ -117,6 +117,12 @@ export namespace Pty {
     return state().get(id)?.info
   }
 
+  export function buffer(id: PtyID) {
+    const session = state().get(id)
+    if (!session) return ""
+    return session.buffer
+  }
+
   export async function create(input: CreateInput) {
     const id = PtyID.ascending()
     const command = input.command || Shell.preferred()
