@@ -253,6 +253,10 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         mobileSidebar: {
           opened: false,
         },
+        preview: {
+          opened: false,
+          width: DEFAULT_PANEL_WIDTH,
+        },
         sessionTabs: {} as Record<string, SessionTabs>,
         sessionView: {} as Record<string, SessionView>,
         handoff: {
@@ -686,6 +690,38 @@ export const { use: useLayout, provider: LayoutProvider } = createSimpleContext(
         },
         toggle() {
           setStore("mobileSidebar", "opened", (x) => !x)
+        },
+      },
+      preview: {
+        opened: createMemo(() => (store as any).preview?.opened ?? false),
+        width: createMemo(() => (store as any).preview?.width ?? DEFAULT_PANEL_WIDTH),
+        open() {
+          if (!(store as any).preview) {
+            setStore("preview" as any, { opened: true, width: DEFAULT_PANEL_WIDTH })
+            return
+          }
+          setStore("preview" as any, "opened", true)
+        },
+        close() {
+          if (!(store as any).preview) {
+            setStore("preview" as any, { opened: false, width: DEFAULT_PANEL_WIDTH })
+            return
+          }
+          setStore("preview" as any, "opened", false)
+        },
+        toggle() {
+          if (!(store as any).preview) {
+            setStore("preview" as any, { opened: true, width: DEFAULT_PANEL_WIDTH })
+            return
+          }
+          setStore("preview" as any, "opened", (x: boolean) => !x)
+        },
+        resize(width: number) {
+          if (!(store as any).preview) {
+            setStore("preview" as any, { opened: false, width })
+            return
+          }
+          setStore("preview" as any, "width", width)
         },
       },
       pendingMessage: {

@@ -29,12 +29,14 @@ export function PreviewPanel() {
   // This requires the fetch calls below to pass the directory so the backend
   // instance context matches and Bus.publish emits with the correct directory.
   createEffect(() => {
-    const unsubReady = sdk.event.on("preview.ready", (event) => {
+    // @ts-expect-error - preview events are not mapped in this sdk version
+    const unsubReady = sdk.event.on("preview.ready", (event: any) => {
       setUrl(event.properties.url)
       setPtyId(event.properties.ptyId)
       setStatus("ready")
     })
 
+    // @ts-expect-error - preview events are not mapped in this sdk version
     const unsubStopped = sdk.event.on("preview.stopped", () => {
       setStatus("idle")
       setUrl(null)
@@ -201,7 +203,7 @@ export function PreviewPanel() {
             <Switch>
               <Match when={status() === "idle"}>
                 <div class="h-full flex flex-col items-center justify-center gap-3 text-center px-6">
-                  <Icon name="preview" size="large" class="opacity-20 text-icon-base" />
+                  <Icon name="server" size="large" class="opacity-20 text-icon-base" />
                   <div class="text-12-regular text-text-weak">Press play to start the dev server</div>
                 </div>
               </Match>

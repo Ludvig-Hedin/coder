@@ -11,3 +11,11 @@ If you also want the Opencode backend running (the packages/opencode Hono server
 bun run dev – it boots the API and keep it watching your server-side changes.
 
 PORT=3001 bun run dev:web
+
+## Build for desktop
+
+cd packages/desktop
+bun run tauri build
+(Make sure you are in packages/desktop)
+
+The built DMG lives under packages/desktop/src-tauri/target/release/bundle/dmg/Cloud Code_1.2.26_aarch64.dmg

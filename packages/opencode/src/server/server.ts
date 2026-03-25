@@ -128,6 +128,8 @@ export namespace Server {
         // Allow CORS preflight requests to succeed without auth.
         // Browser clients sending Authorization headers will preflight with OPTIONS.
         if (c.req.method === "OPTIONS") return next()
+        // Allow health endpoint without auth so Railway/Render health checks work.
+        if (c.req.path === "/global/health") return next()
         const password = Flag.OPENCODE_SERVER_PASSWORD
         if (!password) return next()
         const username = Flag.OPENCODE_SERVER_USERNAME ?? "opencode"
