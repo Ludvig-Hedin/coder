@@ -306,13 +306,20 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       },
       set(item: ModelKey | undefined, options?: { recent?: boolean }) {
         batch(() => {
+          const prev = current()
+          const changed =
+            prev?.provider.id !== item?.providerID ||
+            prev?.id !== item?.modelID
           setStore("last", {
             type: "model",
             agent: agent.current()?.name,
             model: item ?? null,
             variant: selected(),
           })
-          write({ model: item })
+          write({
+            model: item,
+            variant: changed ? undefined : selected(),
+          })
           if (!item) return
           models.setVisibility(item, true)
           if (!options?.recent) return

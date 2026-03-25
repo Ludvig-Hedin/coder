@@ -236,6 +236,8 @@ const createPlatform = (): Platform => {
 
             const store = await getStore(name)
             const value = await store.get(key).catch(() => null)
+            const queued = pending.get(key)
+            if (queued !== undefined) return queued
             if (value === undefined) return null
             return value
           },
