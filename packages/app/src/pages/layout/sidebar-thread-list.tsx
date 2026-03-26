@@ -358,6 +358,7 @@ export const SidebarThreadList = (props: {
   onOpenProject: () => void
   onOpenSettings: () => void
   onOpenSkills: () => void
+  onOpenTasks: () => void
   onEditThread: (session: Session) => void
   onRemoveThread: (session: Session) => void
 }): JSX.Element => {
@@ -368,6 +369,7 @@ export const SidebarThreadList = (props: {
   const [scope, setScope] = createSignal<"all" | "relevant">("all")
   const automations = () => location.pathname.startsWith("/automations")
   const skills = () => location.pathname.startsWith("/skills")
+  const tasks = () => location.pathname.startsWith("/tasks")
 
   const Item = (itemProps: {
     icon: "folder" | "bullet-list" | "plus-small" | "pencil-line" | "bubble-5" | "models"
@@ -447,6 +449,23 @@ export const SidebarThreadList = (props: {
             }}
           >
             Skills
+          </Button>
+
+          <Button
+            variant="ghost"
+            class="h-11 justify-start text-17-medium text-text-strong hover:bg-surface-raised-base-hover"
+            icon="checklist"
+            data-selected={tasks()}
+            aria-current={tasks() ? "page" : undefined}
+            onClick={props.onOpenTasks}
+            style={{
+              "border-radius": row.radius,
+              "padding-left": row.padX,
+              "padding-right": row.padX,
+              "line-height": row.lineHeight.toString(),
+            }}
+          >
+            {language.t("tasks.title")}
           </Button>
         </div>
 

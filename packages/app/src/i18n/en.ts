@@ -547,6 +547,20 @@ export const dict = {
   "automations.dialog.template.description.refactor":
     "Plans and executes incremental zero-regression file splits with strict verification after each extraction.",
 
+  "tasks.title": "Tasks",
+  "tasks.new": "New task",
+  "tasks.empty": "No tasks yet.",
+  "tasks.status.todo": "To Do",
+  "tasks.status.inprogress": "In Progress",
+  "tasks.status.done": "Done",
+  "tasks.start": "Start",
+  "tasks.stop": "Stop",
+  "tasks.project.label": "Project",
+  "tasks.project.placeholder": "Select a project",
+  "tasks.dialog.nameLabel": "Task name",
+  "tasks.dialog.namePlaceholder": "Describe the task...",
+  "tasks.dialog.create": "Create",
+
   "session.tab.session": "Session",
   "session.tab.review": "Review",
   "session.tab.context": "Context",

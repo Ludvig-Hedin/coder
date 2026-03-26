@@ -2361,6 +2361,11 @@ export default function Layout(props: ParentProps) {
     navigate("/automations")
     layout.mobileSidebar.hide()
   }
+  const openTasks = () => {
+    clearSidebarHoverState()
+    navigate("/tasks")
+    layout.mobileSidebar.hide()
+  }
   const openNewThread = () => {
     if (params.dir) {
       navigateWithSidebarReset(`/${params.dir}/session`)
@@ -2395,6 +2400,7 @@ export default function Layout(props: ParentProps) {
       onOpenProject={() => void chooseProject()}
       onOpenSettings={openSettings}
       onOpenSkills={openSkills}
+      onOpenTasks={openTasks}
       onEditThread={(session) => showEditThreadDialog(session)}
       onRemoveThread={(session) => confirmRemoveThread(session)}
     />

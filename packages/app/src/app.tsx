@@ -49,6 +49,7 @@ import { useCheckServerHealth } from "./utils/server-health"
 const Home = lazy(() => import("@/pages/home"))
 const Automations = lazy(() => import("@/pages/automations"))
 const Skills = lazy(() => import("@/pages/skills"))
+const Tasks = lazy(() => import("@/pages/tasks"))
 const Session = lazy(() => import("@/pages/session"))
 const Loading = () => <div class="size-full" />
 
@@ -75,6 +76,12 @@ const AutomationsRoute = () => (
 const SkillsRoute = () => (
   <Suspense fallback={<Loading />}>
     <Skills />
+  </Suspense>
+)
+
+const TasksRoute = () => (
+  <Suspense fallback={<Loading />}>
+    <Tasks />
   </Suspense>
 )
 
@@ -298,6 +305,7 @@ export function AppInterface(props: {
               <Route path="/" component={HomeRoute} />
               <Route path="/automations" component={AutomationsRoute} />
               <Route path="/skills" component={SkillsRoute} />
+              <Route path="/tasks" component={TasksRoute} />
               <Route path="/:dir" component={DirectoryLayout}>
                 <Route path="/" component={SessionIndexRoute} />
                 <Route path="/session/:id?" component={SessionRoute} />
